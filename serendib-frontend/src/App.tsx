@@ -1,122 +1,82 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { Search, ArrowRight } from "lucide-react";
+import Header from "./components/Header";
+import DestinationCard from "./components/DestinationCard";
+import { destinations } from "./data/destinations";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+    <div className="app" id="top">
+      <Header />
+
+      <main>
+        <section className="hero">
+          <div className="hero-overlay" />
+          <div className="hero-content">
+            <p className="eyebrow light">A SLOWER WAY TO SEE THE ISLAND</p>
+            <h1>
+              Go where the  
+
+              <em>green</em> things are.
+            </h1>
+            <p className="hero-description">
+              Thoughtful guides to Sri Lanka's wild coastlines, misty hills
+              and ancient roads.
+            </p>
+            <form className="hero-search" onSubmit={(event) => event.preventDefault()}>
+              <Search size={19} />
+              <input placeholder="Search destinations, things to do..." />
+              <button type="submit">Explore <ArrowRight size={16} /></button>
+            </form>
+            <div className="hero-facts">
+              <span><i /> 10 places worth the detour</span>
+              <span>Updated for 2025</span>
+            </div>
+          </div>
+          <span className="hero-location">01 / 04 &nbsp; · &nbsp; Central Highlands</span>
+        </section>
+
+        <section className="intro-section" id="about">
+          <div>
+            <p className="eyebrow">THE SERENDIB EDIT</p>
+            <h2>One island,  
+<em>many ways in.</em></h2>
+          </div>
+          <p className="intro-copy">
+            From the first train ride into the hills to the last swim at sunset,
+            Sri Lanka rewards the curious. Start with the places we keep coming back to.
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+        </section>
 
-      <div className="ticks"></div>
+        <section className="explore-section" id="explore">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">PLACES TO BEGIN</p>
+              <h2>Find your next <em>good place.</em></h2>
+            </div>
+            <a className="text-link" href="#all-destinations">See all places <ArrowRight size={16} /></a>
+          </div>
+          <div className="destination-grid">
+            {destinations.map((destination) => (
+              <DestinationCard key={destination.id} destination={destination} />
+            ))}
+          </div>
+        </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <section className="guide-banner" id="guides">
+          <div>
+            <p className="eyebrow light">THE NOTEBOOK</p>
+            <h2>Ideas for  
+<em>the long way.</em></h2>
+          </div>
+          <p>Field notes, practical help and small stories from around Sri Lanka.</p>
+          <button className="outline-light-button">Read the guides <ArrowRight size={16} /></button>
+        </section>
+      </main>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <footer className="site-footer">
+        <span>© 2025 Serendib Journal</span>
+        <span>Made for slow travellers</span>
+      </footer>
+    </div>
+  );
 }
-
-export default App
