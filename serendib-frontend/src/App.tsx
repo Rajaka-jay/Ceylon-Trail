@@ -1,9 +1,21 @@
+import {useState} from "react";
 import { Search, ArrowRight } from "lucide-react";
 import Header from "./components/Header";
 import DestinationCard from "./components/DestinationCard";
 import { destinations } from "./data/destinations";
 
 export default function App() {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredDestinations = destinations.filter((destination) => {
+    const searchText = searchTerm.toLowerCase();
+
+    return (
+      destination.name.toLowerCase().includes(searchText) ||
+      destination.location.toLowerCase().includes(searchText) ||
+      destination.category.toLowerCase().includes(searchText)
+    );
+  });
   return (
     <div className="app" id="top">
       <Header />
@@ -24,7 +36,13 @@ export default function App() {
             </p>
             <form className="hero-search" onSubmit={(event) => event.preventDefault()}>
               <Search size={19} />
-              <input placeholder="Search destinations, things to do..." />
+              <input
+                type="search"
+                placeholder="Search destinations, things to do..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+
               <button type="submit">Explore <ArrowRight size={16} /></button>
             </form>
             <div className="hero-facts">
@@ -39,7 +57,7 @@ export default function App() {
           <div>
             <p className="eyebrow">THE SERENDIB EDIT</p>
             <h2>One island,  
-<em>many ways in.</em></h2>
+            <em>many ways in.</em></h2>
           </div>
           <p className="intro-copy">
             From the first train ride into the hills to the last swim at sunset,
@@ -56,9 +74,19 @@ export default function App() {
             <a className="text-link" href="#all-destinations">See all places <ArrowRight size={16} /></a>
           </div>
           <div className="destination-grid">
-            {destinations.map((destination) => (
-              <DestinationCard key={destination.id} destination={destination} />
-            ))}
+            {filteredDestinations.length > 0 ? (
+              filteredDestinations.map((destination) => (
+                <DestinationCard
+                  key={destination.id}
+                  destination={destination}
+                />
+            ))
+          ) : (
+            <p className="empty-message">
+              No destinations found. Try another search.
+            </p>
+          )}
+
           </div>
         </section>
 
