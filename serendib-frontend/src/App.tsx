@@ -1,21 +1,50 @@
-import {useState} from "react";
+import { useState } from "react";
 import { Search, ArrowRight } from "lucide-react";
+import { Route, Routes } from "react-router-dom";
+
 import Header from "./components/Header";
 import DestinationCard from "./components/DestinationCard";
+import DestinationDetails from "./pages/DestinationDetails";
 import { destinations } from "./data/destinations";
 
-export default function App() {
+type HomePageProps = {
+  favoriteIds: number[];
+  onToggleFavorite: (destinationId: number) => void;
+};
+
+function HomePage({
+  favoriteIds,
+  onToggleFavorite,
+}: HomePageProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const filteredDestinations = destinations.filter((destination) => {
-    const searchText = searchTerm.toLowerCase();
+  const categories = [
+    "All",
+    ...Array.from(
+      new Set(
+        destinations.map((destination) => destination.category),
+      ),
+    ),
+  ];
 
-    return (
-      destination.name.toLowerCase().includes(searchText) ||
-      destination.location.toLowerCase().includes(searchText) ||
-      destination.category.toLowerCase().includes(searchText)
-    );
-  });
+  const filteredDestinations = destinations.filter(
+    (destination) => {
+      const searchText = searchTerm.toLowerCase();
+
+      const matchesSearch =
+        destination.name.toLowerCase().includes(searchText) ||
+        destination.location.toLowerCase().includes(searchText) ||
+        destination.category.toLowerCase().includes(searchText);
+
+      const matchesCategory =
+        selectedCategory === "All" ||
+        destination.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    },
+  );
+
   return (
     <div className="app" id="top">
       <Header />
@@ -23,45 +52,76 @@ export default function App() {
       <main>
         <section className="hero">
           <div className="hero-overlay" />
+
           <div className="hero-content">
-            <p className="eyebrow light">A SLOWER WAY TO SEE THE ISLAND</p>
+            <p className="eyebrow light">
+              A SLOWER WAY TO SEE THE ISLAND
+            </p>
+
             <h1>
-              Go where the  
+              Go where the
+                
 
               <em>green</em> things are.
             </h1>
+
             <p className="hero-description">
-              Thoughtful guides to Sri Lanka's wild coastlines, misty hills
-              and ancient roads.
+              Thoughtful guides to Sri Lanka&apos;s wild coastlines,
+              misty hills and ancient roads.
             </p>
-            <form className="hero-search" onSubmit={(event) => event.preventDefault()}>
+
+            <form
+              className="hero-search"
+              onSubmit={(event) => event.preventDefault()}
+            >
               <Search size={19} />
+
               <input
                 type="search"
                 placeholder="Search destinations, things to do..."
                 value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
+                onChange={(event) =>
+                  setSearchTerm(event.target.value)
+                }
               />
 
-              <button type="submit">Explore <ArrowRight size={16} /></button>
+              <button type="submit">
+                Explore
+                <ArrowRight size={16} />
+              </button>
             </form>
+
             <div className="hero-facts">
-              <span><i /> 10 places worth the detour</span>
+              <span>
+                <i />
+                10 places worth the detour
+              </span>
+
               <span>Updated for 2025</span>
             </div>
           </div>
-          <span className="hero-location">01 / 04 &nbsp; · &nbsp; Central Highlands</span>
+
+          <span className="hero-location">
+            01 / 04&nbsp;&nbsp;·&nbsp;&nbsp;Central Highlands
+          </span>
         </section>
 
         <section className="intro-section" id="about">
           <div>
             <p className="eyebrow">THE SERENDIB EDIT</p>
-            <h2>One island,  
-            <em>many ways in.</em></h2>
+
+            <h2>
+              One island,
+                
+
+              <em>many ways in.</em>
+            </h2>
           </div>
+
           <p className="intro-copy">
-            From the first train ride into the hills to the last swim at sunset,
-            Sri Lanka rewards the curious. Start with the places we keep coming back to.
+            From the first train ride into the hills to the last
+            swim at sunset, Sri Lanka rewards the curious. Start with
+            the places we keep coming back to.
           </p>
         </section>
 
@@ -69,35 +129,82 @@ export default function App() {
           <div className="section-heading">
             <div>
               <p className="eyebrow">PLACES TO BEGIN</p>
-              <h2>Find your next <em>good place.</em></h2>
+
+              <h2>
+                Find your next <em>good place.</em>
+              </h2>
             </div>
-            <a className="text-link" href="#all-destinations">See all places <ArrowRight size={16} /></a>
+
+            <a
+              className="text-link"
+              href="#all-destinations"
+            >
+              See all places <ArrowRight size={16} />
+            </a>
           </div>
+
+          <div className="category-filters">
+            {categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={
+                  selectedCategory === category
+                    ? "category-button active"
+                    : "category-button"
+                }
+                onClick={() =>
+                  setSelectedCategory(category)
+                }
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
           <div className="destination-grid">
             {filteredDestinations.length > 0 ? (
               filteredDestinations.map((destination) => (
                 <DestinationCard
                   key={destination.id}
                   destination={destination}
+                  isFavorite={favoriteIds.includes(
+                    destination.id,
+                  )}
+                  onToggleFavorite={onToggleFavorite}
                 />
-            ))
-          ) : (
-            <p className="empty-message">
-              No destinations found. Try another search.
-            </p>
-          )}
-
+              ))
+            ) : (
+              <p className="empty-message">
+                No destinations found. Try another search.
+              </p>
+            )}
           </div>
         </section>
 
         <section className="guide-banner" id="guides">
           <div>
             <p className="eyebrow light">THE NOTEBOOK</p>
-            <h2>Ideas for  
-<em>the long way.</em></h2>
+
+            <h2>
+              Ideas for
+                
+
+              <em>the long way.</em>
+            </h2>
           </div>
-          <p>Field notes, practical help and small stories from around Sri Lanka.</p>
-          <button className="outline-light-button">Read the guides <ArrowRight size={16} /></button>
+
+          <p>
+            Field notes, practical help and small stories from
+            around Sri Lanka.
+          </p>
+
+          <button
+            type="button"
+            className="outline-light-button"
+          >
+            Read the guides <ArrowRight size={16} />
+          </button>
         </section>
       </main>
 
@@ -106,5 +213,69 @@ export default function App() {
         <span>Made for slow travellers</span>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  const [favoriteIds, setFavoriteIds] = useState<number[]>(
+    () => {
+      const savedFavorites = localStorage.getItem(
+        "serendib-favorites",
+      );
+
+      if (!savedFavorites) {
+        return [];
+      }
+
+      try {
+        return JSON.parse(savedFavorites) as number[];
+      } catch {
+        return [];
+      }
+    },
+  );
+
+  const toggleFavorite = (destinationId: number) => {
+    setFavoriteIds((currentFavorites) => {
+      const isAlreadyFavorite =
+        currentFavorites.includes(destinationId);
+
+      const updatedFavorites = isAlreadyFavorite
+        ? currentFavorites.filter(
+            (id) => id !== destinationId,
+          )
+        : [...currentFavorites, destinationId];
+
+      localStorage.setItem(
+        "serendib-favorites",
+        JSON.stringify(updatedFavorites),
+      );
+
+      return updatedFavorites;
+    });
+  };
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <HomePage
+            favoriteIds={favoriteIds}
+            onToggleFavorite={toggleFavorite}
+          />
+        }
+      />
+
+      <Route
+        path="/destinations/:id"
+        element={
+          <DestinationDetails
+            favoriteIds={favoriteIds}
+            onToggleFavorite={toggleFavorite}
+          />
+        }
+      />
+    </Routes>
   );
 }
