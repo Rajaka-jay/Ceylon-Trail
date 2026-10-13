@@ -14,7 +14,7 @@ export default function Header( ) {
 
             <nav className="main-nav"  aria-label="Main Navigation">
                 <a href="explore">Explore</a>
-                <a href="guides">Guides</a>
+                <Link to="/guides">Guides</Link>
                 <a href="about">About</a>
                 <Link to="/saved" className="saved-link">
                     <Heart size={16} />

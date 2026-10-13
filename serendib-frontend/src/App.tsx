@@ -7,6 +7,8 @@ import DestinationCard from "./components/DestinationCard";
 import DestinationDetails from "./pages/DestinationDetails";
 import SavedPlaces from "./pages/SavedPlaces";
 import { destinations } from "./data/destinations";
+import Guides from "./pages/Guides";
+import GuideDetails from "./pages/GuideDetails";
 
 type HomePageProps = {
   favoriteIds: number[];
@@ -276,6 +278,15 @@ export default function App() {
           />
         }
       />
+      <Route
+        path="/guides"
+        element={<Guides />}
+      />
+
+      <Route
+        path="/guides/:slug"
+        element={<GuideDetails />}
+      />
 
       <Route
         path="/destinations/:id"
@@ -286,6 +297,7 @@ export default function App() {
           />
         }
       />
+
     </Routes>
   );
 }
