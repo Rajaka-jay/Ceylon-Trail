@@ -1,4 +1,5 @@
-import {Heart, Moon, Search}from "lucide-react";
+import { Heart, Moon } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Header( ) {
     return(
@@ -15,7 +16,11 @@ export default function Header( ) {
                 <a href="explore">Explore</a>
                 <a href="guides">Guides</a>
                 <a href="about">About</a>
-                <a href="saved"><Heart size={16} /></a>
+                <Link to="/saved" className="saved-link">
+                    <Heart size={16} />
+                    Saved
+                </Link>
+
             </nav>
 
             <div className="header-actions">

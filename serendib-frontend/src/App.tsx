@@ -5,6 +5,7 @@ import { Route, Routes } from "react-router-dom";
 import Header from "./components/Header";
 import DestinationCard from "./components/DestinationCard";
 import DestinationDetails from "./pages/DestinationDetails";
+import SavedPlaces from "./pages/SavedPlaces";
 import { destinations } from "./data/destinations";
 
 type HomePageProps = {
@@ -261,6 +262,15 @@ export default function App() {
         path="/"
         element={
           <HomePage
+            favoriteIds={favoriteIds}
+            onToggleFavorite={toggleFavorite}
+          />
+        }
+      />
+      <Route
+        path="/saved"
+        element={
+          <SavedPlaces
             favoriteIds={favoriteIds}
             onToggleFavorite={toggleFavorite}
           />
