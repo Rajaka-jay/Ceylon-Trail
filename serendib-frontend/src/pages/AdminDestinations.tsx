@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   createDestination,
@@ -8,6 +9,7 @@ import {
   updateDestination,
   type Destination,
 } from "../api/destinations";
+import { logoutAdmin } from "../api/auth";
 
 type FormValues = {
   name: string;
@@ -30,6 +32,7 @@ const emptyForm: FormValues = {
 };
 
 export default function AdminDestinations() {
+  const navigate = useNavigate();
   const [destinations, setDestinations] = useState<
     Destination[]
   >([]);
@@ -97,6 +100,11 @@ export default function AdminDestinations() {
   function resetForm() {
     setEditingId(null);
     setForm(emptyForm);
+  }
+
+  function handleLogout() {
+    logoutAdmin();
+    navigate("/admin/login");
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -174,6 +182,13 @@ export default function AdminDestinations() {
           Create, edit and remove destinations stored in
           PostgreSQL.
         </p>
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={handleLogout}
+        >
+          Log out
+        </button>
       </header>
 
       {error && (
