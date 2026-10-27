@@ -1,5 +1,12 @@
 import { adminHeaders } from "./admin";
 
+export type DestinationSection = {
+  id: number;
+  heading: string;
+  content: string;
+  sortOrder: number;
+};
+
 export type Destination = {
   id: number;
   name: string;
@@ -14,11 +21,7 @@ export type Destination = {
     name: string;
     slug: string;
   };
-  sections?: Array<{
-    id: number;
-    heading: string;
-    content: string;
-  }>;
+  sections?: DestinationSection[];
 };
 
 export type DestinationFormValues = {
@@ -47,7 +50,7 @@ const API_URL = "/api";
 
 async function getErrorMessage(
   response: Response,
-) {
+): Promise<string> {
   try {
     const result = (await response.json()) as {
       message?: string;
