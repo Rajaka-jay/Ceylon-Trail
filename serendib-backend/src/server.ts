@@ -2,12 +2,14 @@ import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import { prisma } from "./db.js";
+import authRouter, { requireAdmin } from "./auth.js";
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth", authRouter);
 
 app.get("/api/health", (_request, response) => {
   response.json({
@@ -91,7 +93,10 @@ app.get("/api/destinations/:id", async (request, response) => {
     });
   }
 });
-app.post("/api/destinations", async (request, response) => {
+app.post(
+  "/api/destinations",
+  requireAdmin,
+  async (request, response) => {
   const {
     name,
     slug,
@@ -176,8 +181,12 @@ app.post("/api/destinations", async (request, response) => {
       message: "Failed to create destination",
     });
   }
-});
-app.put("/api/destinations/:id", async (request, response) => {
+},
+);
+app.put(
+  "/api/destinations/:id",
+  requireAdmin,
+  async (request, response) => {
   const id = Number(request.params.id);
 
   if (!Number.isInteger(id) || id <= 0) {
@@ -291,9 +300,11 @@ app.put("/api/destinations/:id", async (request, response) => {
       message: "Failed to update destination",
     });
   }
-});
+},
+);
 app.delete(
   "/api/destinations/:id",
+  requireAdmin,
   async (request, response) => {
     const id = Number(request.params.id);
 

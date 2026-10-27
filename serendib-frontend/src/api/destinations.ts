@@ -1,3 +1,5 @@
+import { adminHeaders } from "./admin";
+
 export type Destination = {
   id: number;
   name: string;
@@ -7,61 +9,14 @@ export type Destination = {
   imageUrl: string | null;
   seoDescription: string | null;
   categoryId: number;
-
-  category?: {
+  category: {
     id: number;
     name: string;
     slug: string;
   };
-
-  sections?: {
-    id: number;
-    heading: string;
-    content: string;
-    sortOrder: number;
-  }[];
 };
 
-
-type ApiResponse<T> = {
-  success: boolean;
-  message?: string;
-  data: T;
-};
-
-async function request<T>(
-  url: string,
-  options?: RequestInit,
-): Promise<T> {
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    ...options,
-  });
-
-  const result = (await response.json()) as ApiResponse<T>;
-
-  if (!response.ok || !result.success) {
-    throw new Error(
-      result.message || "Something went wrong",
-    );
-  }
-
-  return result.data;
-}
-
-export function getDestinations() {
-  return request<Destination[]>("/api/destinations");
-}
-
-export function getDestination(id: number) {
-  return request<Destination>(
-    `/api/destinations/${id}`,
-  );
-}
-
-export function createDestination(data: {
+export type DestinationFormValues = {
   name: string;
   slug: string;
   location: string;
@@ -69,36 +24,118 @@ export function createDestination(data: {
   imageUrl: string;
   seoDescription: string;
   categoryId: number;
-}) {
-  return request<Destination>("/api/destinations", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+};
+
+type DestinationResponse = {
+  success: boolean;
+  data: Destination;
+  message?: string;
+};
+
+type DestinationsResponse = {
+  success: boolean;
+  data: Destination[];
+  message?: string;
+};
+
+const API_URL = "/api";
+
+async function getErrorMessage(
+  response: Response,
+) {
+  try {
+    const result = (await response.json()) as {
+      message?: string;
+    };
+
+    return result.message ?? "Request failed";
+  } catch {
+    return "Request failed";
+  }
 }
 
-export function updateDestination(
+export async function getDestinations(): Promise<
+  Destination[]
+> {
+  const response = await fetch(
+    `${API_URL}/destinations`,
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response),
+    );
+  }
+
+  const result =
+    (await response.json()) as DestinationsResponse;
+
+  return result.data;
+}
+
+export async function createDestination(
+  form: DestinationFormValues,
+): Promise<Destination> {
+  const response = await fetch(
+    `${API_URL}/destinations`,
+    {
+      method: "POST",
+      headers: adminHeaders(),
+      body: JSON.stringify(form),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response),
+    );
+  }
+
+  const result =
+    (await response.json()) as DestinationResponse;
+
+  return result.data;
+}
+
+export async function updateDestination(
   id: number,
-  data: {
-    name: string;
-    slug: string;
-    location: string;
-    shortDescription: string;
-    imageUrl: string;
-    seoDescription: string;
-    categoryId: number;
-  },
-) {
-  return request<Destination>(`/api/destinations/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
+  form: DestinationFormValues,
+): Promise<Destination> {
+  const response = await fetch(
+    `${API_URL}/destinations/${id}`,
+    {
+      method: "PUT",
+      headers: adminHeaders(),
+      body: JSON.stringify(form),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response),
+    );
+  }
+
+  const result =
+    (await response.json()) as DestinationResponse;
+
+  return result.data;
 }
 
 export async function deleteDestination(
   id: number,
 ): Promise<void> {
-  await request<null>(`/api/destinations/${id}`, {
-    method: "DELETE",
-  });
-}
+  const response = await fetch(
+    `${API_URL}/destinations/${id}`,
+    {
+      method: "DELETE",
+      headers: adminHeaders(),
+    },
+  );
 
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response),
+    );
+  }
+}

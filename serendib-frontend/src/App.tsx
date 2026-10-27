@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Search, ArrowRight } from "lucide-react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import Header from "./components/Header";
 import DestinationCard from "./components/DestinationCard";
@@ -9,6 +9,8 @@ import SavedPlaces from "./pages/SavedPlaces";
 import Guides from "./pages/Guides";
 import GuideDetails from "./pages/GuideDetails";
 import AdminDestinations from "./pages/AdminDestinations";
+import AdminLogin from "./pages/AdminLogin";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import {
   getDestinations,
@@ -352,10 +354,29 @@ export default function App() {
           />
         }
       />
-      <Route
-        path="/admin/destinations"
-        element={<AdminDestinations />}
-      />
+<Route
+  path="/admin/login"
+  element={<AdminLogin />}
+/>
+
+<Route
+  path="/admin/destinations"
+  element={
+    <ProtectedRoute>
+      <AdminDestinations />
+    </ProtectedRoute>
+  }
+/>
+
+    <Route
+      path="/admin"
+      element={
+        <Navigate
+          to="/admin/destinations"
+          replace
+        />
+      }
+    />
 
 
     </Routes>
