@@ -3,6 +3,6 @@ export function adminHeaders(): HeadersInit {
 
   return {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token ?? ""}`,
+    Authorization: token ? "Bearer " + token : "",
   };
 }

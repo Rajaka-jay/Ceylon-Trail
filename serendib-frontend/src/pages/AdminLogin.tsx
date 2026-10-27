@@ -1,4 +1,5 @@
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { loginAdmin } from "../api/auth";
@@ -36,7 +37,7 @@ export default function AdminLogin() {
     <main>
       <h1>Admin Login</h1>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} aria-busy={loading}>
         <div>
           <label htmlFor="email">
             Email
@@ -49,6 +50,8 @@ export default function AdminLogin() {
             onChange={(event) =>
               setEmail(event.target.value)
             }
+            autoComplete="email"
+            disabled={loading}
             required
           />
         </div>
@@ -65,11 +68,17 @@ export default function AdminLogin() {
             onChange={(event) =>
               setPassword(event.target.value)
             }
+            autoComplete="current-password"
+            disabled={loading}
             required
           />
         </div>
 
-        {error && <p>{error}</p>}
+        {error && (
+          <p role="alert" aria-live="polite">
+            {error}
+          </p>
+        )}
 
         <button
           type="submit"

@@ -14,6 +14,11 @@ export type Destination = {
     name: string;
     slug: string;
   };
+  sections?: Array<{
+    id: number;
+    heading: string;
+    content: string;
+  }>;
 };
 
 export type DestinationFormValues = {
@@ -69,6 +74,25 @@ export async function getDestinations(): Promise<
 
   const result =
     (await response.json()) as DestinationsResponse;
+
+  return result.data;
+}
+
+export async function getDestination(
+  id: number,
+): Promise<Destination> {
+  const response = await fetch(
+    `${API_URL}/destinations/${id}`,
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response),
+    );
+  }
+
+  const result =
+    (await response.json()) as DestinationResponse;
 
   return result.data;
 }
