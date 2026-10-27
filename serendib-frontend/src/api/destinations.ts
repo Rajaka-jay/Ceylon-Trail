@@ -1,5 +1,12 @@
 import { adminHeaders } from "./admin";
 
+export type DestinationSection = {
+  id: number;
+  heading: string;
+  content: string;
+  sortOrder: number;
+};
+
 export type Destination = {
   id: number;
   name: string;
@@ -14,6 +21,7 @@ export type Destination = {
     name: string;
     slug: string;
   };
+  sections?: DestinationSection[];
 };
 
 export type DestinationFormValues = {
@@ -42,7 +50,7 @@ const API_URL = "/api";
 
 async function getErrorMessage(
   response: Response,
-) {
+): Promise<string> {
   try {
     const result = (await response.json()) as {
       message?: string;
@@ -69,6 +77,25 @@ export async function getDestinations(): Promise<
 
   const result =
     (await response.json()) as DestinationsResponse;
+
+  return result.data;
+}
+
+export async function getDestination(
+  id: number,
+): Promise<Destination> {
+  const response = await fetch(
+    `${API_URL}/destinations/${id}`,
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response),
+    );
+  }
+
+  const result =
+    (await response.json()) as DestinationResponse;
 
   return result.data;
 }
