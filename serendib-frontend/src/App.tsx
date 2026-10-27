@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, ArrowRight } from "lucide-react";
 import { Route, Routes } from "react-router-dom";
 
@@ -6,9 +6,14 @@ import Header from "./components/Header";
 import DestinationCard from "./components/DestinationCard";
 import DestinationDetails from "./pages/DestinationDetails";
 import SavedPlaces from "./pages/SavedPlaces";
-import { destinations } from "./data/destinations";
 import Guides from "./pages/Guides";
 import GuideDetails from "./pages/GuideDetails";
+import AdminDestinations from "./pages/AdminDestinations";
+
+import {
+  getDestinations,
+  type Destination,
+} from "./api/destinations";
 
 type HomePageProps = {
   favoriteIds: number[];
@@ -19,34 +24,84 @@ function HomePage({
   favoriteIds,
   onToggleFavorite,
 }: HomePageProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+ const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [destinations, setDestinations] = useState<
+    Destination[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadDestinations() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getDestinations();
+        setDestinations(data);
+      } catch (loadError) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Could not load destinations",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void loadDestinations();
+  }, []);
 
   const categories = [
     "All",
     ...Array.from(
       new Set(
-        destinations.map((destination) => destination.category),
+        destinations.map(
+          (destination) =>
+            destination.category?.name ?? "Uncategorized",
+        ),
       ),
     ),
   ];
 
+
   const filteredDestinations = destinations.filter(
-    (destination) => {
-      const searchText = searchTerm.toLowerCase();
+  (destination) => {
+    const searchText = searchTerm.toLowerCase();
 
-      const matchesSearch =
-        destination.name.toLowerCase().includes(searchText) ||
-        destination.location.toLowerCase().includes(searchText) ||
-        destination.category.toLowerCase().includes(searchText);
+    const categoryName =
+      destination.category?.name ?? "Uncategorized";
 
-      const matchesCategory =
-        selectedCategory === "All" ||
-        destination.category === selectedCategory;
+    const matchesSearch =
+      destination.name.toLowerCase().includes(searchText) ||
+      destination.location.toLowerCase().includes(searchText) ||
+      categoryName.toLowerCase().includes(searchText);
 
-      return matchesSearch && matchesCategory;
-    },
+    const matchesCategory =
+      selectedCategory === "All" ||
+      categoryName === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  },
+);
+if (loading) {
+  return (
+    <main className="not-found-page">
+      <p>Loading destinations...</p>
+    </main>
   );
+}
+
+if (error) {
+  return (
+    <main className="not-found-page">
+      <h1>Unable to load destinations</h1>
+      <p>{error}</p>
+    </main>
+  );
+}
 
   return (
     <div className="app" id="top">
@@ -297,6 +352,11 @@ export default function App() {
           />
         }
       />
+      <Route
+        path="/admin/destinations"
+        element={<AdminDestinations />}
+      />
+
 
     </Routes>
   );

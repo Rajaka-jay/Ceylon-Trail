@@ -1,8 +1,12 @@
-import { Bookmark, ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Bookmark } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import DestinationCard from "../components/DestinationCard";
-import { destinations } from "../data/destinations";
+import {
+  getDestinations,
+  type Destination,
+} from "../api/destinations";
 
 type SavedPlacesProps = {
   favoriteIds: number[];
@@ -13,9 +17,87 @@ export default function SavedPlaces({
   favoriteIds,
   onToggleFavorite,
 }: SavedPlacesProps) {
+  const [destinations, setDestinations] = useState<
+    Destination[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadDestinations() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getDestinations();
+        setDestinations(data);
+      } catch (loadError) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Could not load saved destinations",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void loadDestinations();
+  }, []);
+
   const savedDestinations = destinations.filter(
     (destination) => favoriteIds.includes(destination.id),
   );
+
+  if (loading) {
+    return (
+      <main className="saved-page">
+        <div className="saved-page-header">
+          <Link to="/" className="back-link">
+            <ArrowLeft size={16} />
+            Back to explore
+          </Link>
+
+          <p className="eyebrow">YOUR TRAVEL LIST</p>
+
+          <h1>
+            Saved <em>places.</em>
+          </h1>
+
+          <p className="saved-page-intro">
+            Loading your saved destinations...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="saved-page">
+        <div className="saved-page-header">
+          <Link to="/" className="back-link">
+            <ArrowLeft size={16} />
+            Back to explore
+          </Link>
+
+          <p className="eyebrow">YOUR TRAVEL LIST</p>
+
+          <h1>
+            Saved <em>places.</em>
+          </h1>
+
+          <p className="saved-page-intro">
+            {error}
+          </p>
+
+          <Link to="/" className="primary-button">
+            Back to explore
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="saved-page">
@@ -78,4 +160,3 @@ export default function SavedPlaces({
     </main>
   );
 }
-

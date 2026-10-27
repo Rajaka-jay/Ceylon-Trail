@@ -5,29 +5,100 @@ export type Destination = {
   location: string;
   shortDescription: string;
   imageUrl: string | null;
+  seoDescription: string | null;
   categoryId: number;
-  category: {
+
+  category?: {
     id: number;
     name: string;
     slug: string;
   };
+
+  sections?: {
+    id: number;
+    heading: string;
+    content: string;
+    sortOrder: number;
+  }[];
 };
 
-type DestinationResponse = {
+
+type ApiResponse<T> = {
   success: boolean;
-  data: Destination[];
+  message?: string;
+  data: T;
 };
 
-const API_URL = "http://localhost:5000/api";
+async function request<T>(
+  url: string,
+  options?: RequestInit,
+): Promise<T> {
+  const response = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    ...options,
+  });
 
-export async function getDestinations(): Promise<Destination[]> {
-  const response = await fetch(`${API_URL}/destinations`);
+  const result = (await response.json()) as ApiResponse<T>;
 
-  if (!response.ok) {
-    throw new Error("Failed to load destinations");
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.message || "Something went wrong",
+    );
   }
-
-  const result = (await response.json()) as DestinationResponse;
 
   return result.data;
 }
+
+export function getDestinations() {
+  return request<Destination[]>("/api/destinations");
+}
+
+export function getDestination(id: number) {
+  return request<Destination>(
+    `/api/destinations/${id}`,
+  );
+}
+
+export function createDestination(data: {
+  name: string;
+  slug: string;
+  location: string;
+  shortDescription: string;
+  imageUrl: string;
+  seoDescription: string;
+  categoryId: number;
+}) {
+  return request<Destination>("/api/destinations", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateDestination(
+  id: number,
+  data: {
+    name: string;
+    slug: string;
+    location: string;
+    shortDescription: string;
+    imageUrl: string;
+    seoDescription: string;
+    categoryId: number;
+  },
+) {
+  return request<Destination>(`/api/destinations/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteDestination(
+  id: number,
+): Promise<void> {
+  await request<null>(`/api/destinations/${id}`, {
+    method: "DELETE",
+  });
+}
+
