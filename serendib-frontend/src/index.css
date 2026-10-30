@@ -102,6 +102,24 @@ h2 { font: 500 clamp(42px, 5.5vw, 78px)/.98 var(--serif); letter-spacing: -.06em
   color: white;
 }
 
+.listing-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: -12px 0 28px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.listing-tools select {
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  padding: 9px 12px;
+  font: inherit;
+}
+
 .save-button {
   cursor: pointer;
   transition:
@@ -221,6 +239,11 @@ h2 { font: 500 clamp(42px, 5.5vw, 78px)/.98 var(--serif); letter-spacing: -.06em
 }
 
 @media (max-width: 700px) {
+  .listing-tools {
+    justify-content: flex-start;
+    margin-top: -4px;
+  }
+
   .details-topbar {
     align-items: flex-start;
     gap: 15px;

@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import { prisma } from "./db.js";
 import authRouter, { requireAdmin } from "./auth.js";
+import { destinationSchema } from "./validation.js";
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
@@ -16,6 +17,19 @@ app.get("/api/health", (_request, response) => {
     success: true,
     message: "Serendib backend is running",
   });
+});
+
+app.get("/api/categories", async (_request, response) => {
+  try {
+    const categories = await prisma.category.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, slug: true, description: true },
+    });
+    response.json({ success: true, data: categories });
+  } catch (error) {
+    console.error("Failed to load categories:", error);
+    response.status(500).json({ success: false, message: "Failed to load categories" });
+  }
 });
 
 app.get("/api/destinations", async (_request, response) => {
@@ -97,35 +111,21 @@ app.post(
   "/api/destinations",
   requireAdmin,
   async (request, response) => {
-  const {
-    name,
-    slug,
-    location,
-    shortDescription,
-    imageUrl,
-    seoDescription,
-    categoryId,
-  } = request.body;
-
-  if (
-    !name ||
-    !slug ||
-    !location ||
-    !shortDescription ||
-    !categoryId
-  ) {
+  const parsed = destinationSchema.safeParse(request.body);
+  if (!parsed.success) {
     response.status(400).json({
       success: false,
-      message:
-        "Name, slug, location, short description and category are required",
+      message: "Validation failed",
+      errors: parsed.error.flatten().fieldErrors,
     });
     return;
   }
+  const { name, slug, location, shortDescription, imageUrl, seoDescription, categoryId } = parsed.data;
 
   try {
     const category = await prisma.category.findUnique({
       where: {
-        id: Number(categoryId),
+        id: categoryId,
       },
     });
 
@@ -139,15 +139,13 @@ app.post(
 
     const destination = await prisma.destination.create({
       data: {
-        name: String(name).trim(),
-        slug: String(slug).trim(),
-        location: String(location).trim(),
-        shortDescription: String(shortDescription).trim(),
-        imageUrl: imageUrl ? String(imageUrl).trim() : null,
-        seoDescription: seoDescription
-          ? String(seoDescription).trim()
-          : null,
-        categoryId: Number(categoryId),
+        name,
+        slug,
+        location,
+        shortDescription,
+        imageUrl: imageUrl || null,
+        seoDescription: seoDescription || null,
+        categoryId,
       },
       include: {
         category: true,
@@ -197,30 +195,16 @@ app.put(
     return;
   }
 
-  const {
-    name,
-    slug,
-    location,
-    shortDescription,
-    imageUrl,
-    seoDescription,
-    categoryId,
-  } = request.body;
-
-  if (
-    !name ||
-    !slug ||
-    !location ||
-    !shortDescription ||
-    !categoryId
-  ) {
+  const parsed = destinationSchema.safeParse(request.body);
+  if (!parsed.success) {
     response.status(400).json({
       success: false,
-      message:
-        "Name, slug, location, short description and category are required",
+      message: "Validation failed",
+      errors: parsed.error.flatten().fieldErrors,
     });
     return;
   }
+  const { name, slug, location, shortDescription, imageUrl, seoDescription, categoryId } = parsed.data;
 
   try {
     const existingDestination =
@@ -238,7 +222,7 @@ app.put(
 
     const category = await prisma.category.findUnique({
       where: {
-        id: Number(categoryId),
+        id: categoryId,
       },
     });
 
@@ -254,19 +238,13 @@ app.put(
       await prisma.destination.update({
         where: { id },
         data: {
-          name: String(name).trim(),
-          slug: String(slug).trim(),
-          location: String(location).trim(),
-          shortDescription: String(
-            shortDescription,
-          ).trim(),
-          imageUrl: imageUrl
-            ? String(imageUrl).trim()
-            : null,
-          seoDescription: seoDescription
-            ? String(seoDescription).trim()
-            : null,
-          categoryId: Number(categoryId),
+          name,
+          slug,
+          location,
+          shortDescription,
+          imageUrl: imageUrl || null,
+          seoDescription: seoDescription || null,
+          categoryId,
         },
         include: {
           category: true,

@@ -5,8 +5,10 @@ import { useNavigate } from "react-router-dom";
 import {
   createDestination,
   deleteDestination,
+  getCategories,
   getDestinations,
   updateDestination,
+  type Category,
   type Destination,
 } from "../api/destinations";
 import { logoutAdmin } from "../api/auth";
@@ -28,7 +30,7 @@ const emptyForm: FormValues = {
   shortDescription: "",
   imageUrl: "",
   seoDescription: "",
-  categoryId: 1,
+  categoryId: 0,
 };
 
 export default function AdminDestinations() {
@@ -36,6 +38,7 @@ export default function AdminDestinations() {
   const [destinations, setDestinations] = useState<
     Destination[]
   >([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<FormValues>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(
     null,
@@ -63,8 +66,21 @@ export default function AdminDestinations() {
     }
   }
 
+  async function loadCategories() {
+    try {
+      setCategories(await getCategories());
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Could not load categories",
+      );
+    }
+  }
+
   useEffect(() => {
     void loadDestinations();
+    void loadCategories();
   }, []);
 
   function updateField(
@@ -115,10 +131,11 @@ export default function AdminDestinations() {
     if (
       form.name.trim().length < 2 ||
       form.location.trim().length < 2 ||
-      form.shortDescription.trim().length < 20
+      form.shortDescription.trim().length < 20 ||
+      form.categoryId <= 0
     ) {
       setError(
-        "Enter a name, location and description of at least 20 characters.",
+        "Enter a name, choose a category, and provide a description of at least 20 characters.",
       );
       return;
     }
@@ -257,23 +274,24 @@ export default function AdminDestinations() {
           </label>
 
           <label>
-            Category ID
-            <input
-              type="number"
-              min="1"
-              value={form.categoryId}
+            Category
+            <select
+              value={form.categoryId || ""}
               onChange={(event) =>
-                updateField(
-                  "categoryId",
-                  event.target.value,
-                )
+                updateField("categoryId", event.target.value)
               }
               required
-            />
-            <small>
-              Use the ID of a category created in Prisma
-              Studio.
-            </small>
+            >
+              <option value="">Select a category</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            {categories.length === 0 && (
+              <small>No categories found. Run the database seed command.</small>
+            )}
           </label>
 
           <label className="form-field-wide">

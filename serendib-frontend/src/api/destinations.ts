@@ -24,6 +24,13 @@ export type Destination = {
   sections?: DestinationSection[];
 };
 
+export type Category = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+};
+
 export type DestinationFormValues = {
   name: string;
   slug: string;
@@ -46,6 +53,12 @@ type DestinationsResponse = {
   message?: string;
 };
 
+type CategoriesResponse = {
+  success: boolean;
+  data: Category[];
+  message?: string;
+};
+
 const API_URL = "/api";
 
 async function getErrorMessage(
@@ -54,12 +67,29 @@ async function getErrorMessage(
   try {
     const result = (await response.json()) as {
       message?: string;
+      errors?: Record<string, string[] | undefined>;
     };
-
+    if (result.errors) {
+      const details = Object.entries(result.errors)
+        .flatMap(([field, messages]) =>
+          (messages ?? []).map((message) => `${field}: ${message}`),
+        )
+        .join("; ");
+      if (details) return details;
+    }
     return result.message ?? "Request failed";
   } catch {
     return "Request failed";
   }
+}
+
+export async function getCategories(): Promise<Category[]> {
+  const response = await fetch(`${API_URL}/categories`);
+  if (!response.ok) {
+    throw new Error(await getErrorMessage(response));
+  }
+  const result = (await response.json()) as CategoriesResponse;
+  return result.data;
 }
 
 export async function getDestinations(): Promise<

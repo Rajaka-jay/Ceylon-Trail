@@ -26,8 +26,9 @@ function HomePage({
   favoriteIds,
   onToggleFavorite,
 }: HomePageProps) {
- const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+	 const [searchTerm, setSearchTerm] = useState("");
+	  const [selectedCategory, setSelectedCategory] = useState("All");
+	  const [sortOrder, setSortOrder] = useState("name-asc");
   const [destinations, setDestinations] = useState<
     Destination[]
   >([]);
@@ -88,6 +89,12 @@ function HomePage({
     return matchesSearch && matchesCategory;
   },
 );
+  const sortedDestinations = [...filteredDestinations].sort((a, b) => {
+    if (sortOrder === "name-desc") return b.name.localeCompare(a.name);
+    if (sortOrder === "location-asc") return a.location.localeCompare(b.location);
+    if (sortOrder === "newest") return b.id - a.id;
+    return a.name.localeCompare(b.name);
+  });
 if (loading) {
   return (
     <main className="not-found-page">
@@ -222,9 +229,23 @@ if (error) {
             ))}
           </div>
 
+          <div className="listing-tools">
+            <label htmlFor="destination-sort">Sort by</label>
+            <select
+              id="destination-sort"
+              value={sortOrder}
+              onChange={(event) => setSortOrder(event.target.value)}
+            >
+              <option value="name-asc">Name A–Z</option>
+              <option value="name-desc">Name Z–A</option>
+              <option value="location-asc">Location A–Z</option>
+              <option value="newest">Newest first</option>
+            </select>
+          </div>
+
           <div className="destination-grid">
-            {filteredDestinations.length > 0 ? (
-              filteredDestinations.map((destination) => (
+            {sortedDestinations.length > 0 ? (
+              sortedDestinations.map((destination) => (
                 <DestinationCard
                   key={destination.id}
                   destination={destination}
