@@ -10,6 +10,8 @@ import Guides from "./pages/Guides";
 import GuideDetails from "./pages/GuideDetails";
 import AdminDestinations from "./pages/AdminDestinations";
 import AdminLogin from "./pages/AdminLogin";
+import Explore from "./pages/Explore";
+import About from "./pages/About";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import {
@@ -298,6 +300,11 @@ if (error) {
 }
 
 export default function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("serendib-theme");
+    document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+  }, []);
+
   const [favoriteIds, setFavoriteIds] = useState<number[]>(
     () => {
       const savedFavorites = localStorage.getItem(
@@ -356,6 +363,8 @@ export default function App() {
           />
         }
       />
+      <Route path="/explore" element={<Explore />} />
+      <Route path="/about" element={<About />} />
       <Route
         path="/guides"
         element={<Guides />}

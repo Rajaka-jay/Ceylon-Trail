@@ -1,8 +1,0 @@
-b72e5c1 - Rajaka jay, yrjagodaarachchi@gmail.com : guide pages and routing
-07fde1b - Rajaka jay, yrjagodaarachchi@gmail.com : saved places page added and header link to saved places added
-7787d2a - Rajaka jay, yrjagodaarachchi@gmail.com : destination details page added with a new route
-5282c65 - Rajaka jay, yrjagodaarachchi@gmail.com : search functionality added to the app. Users can now search for destinations using the search bar in the hero section. The search term is stored in the state and can be used to filter the displayed destinations. Additionally, an empty message style has been added to the CSS for better user experience when no results are found.
-80b5f8e - Rajaka jay, yrjagodaarachchi@gmail.com : frontend files added to the project, including lucide-react icons and react library files. The package-lock.json and package.json files have been updated, along with modifications to App.tsx, index.css, and main.tsx. Additionally, a typo in the data file name has been corrected from "destinatios.ts" to "destinations.ts".
-9a2dfd0 - Rajaka jay, yrjagodaarachchi@gmail.com : modified:   serendib-frontend/src/components/DestinationCard.tsx
-2db34ed - Rajaka jay, yrjagodaarachchi@gmail.com : header and destinations updated
-515fdc5 - Rajaka jay, yrjagodaarachchi@gmail.com : Initial project setup
