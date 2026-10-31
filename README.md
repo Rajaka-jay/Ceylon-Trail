@@ -128,11 +128,3 @@ Manual CRUD test sequence:
 5. Delete it and confirm the browser confirmation dialog.
 6. Verify the record is removed from both the admin list and public detail view.
 7. Try an invalid slug, short description and duplicate slug to verify validation and error messages.
-
-## Demonstration checklist
-
-Keep the demonstration video below five minutes and keep the camera on. Show the public listing, search, filter, sort, details page, administrator login, create, update, validation error, confirmation before delete, successful delete, database schema and responsive layout.
-
-## Academic integrity
-
-This project should be submitted with the student's own explanation of design decisions and implementation. Keep meaningful commit history and be prepared to explain the CRUD routes, Prisma relationships, validation rules and authentication flow during the demonstration.
