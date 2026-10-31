@@ -131,7 +131,7 @@ if (error) {
               Go where the
                 
 
-              <em>green</em> things are.
+              <em> green</em> things are.
             </h1>
 
             <p className="hero-description">
@@ -163,16 +163,14 @@ if (error) {
             <div className="hero-facts">
               <span>
                 <i />
-                10 places worth the detour
+                5 places worth the detour
               </span>
 
-              <span>Updated for 2025</span>
+              <span>Updated for 2026</span>
             </div>
           </div>
 
-          <span className="hero-location">
-            01 / 04&nbsp;&nbsp;·&nbsp;&nbsp;Central Highlands
-          </span>
+          
         </section>
 
         <section className="intro-section" id="about">
@@ -183,7 +181,7 @@ if (error) {
               One island,
                 
 
-              <em>many ways in.</em>
+              <em> many ways in.</em>
             </h2>
           </div>
 
@@ -200,7 +198,7 @@ if (error) {
               <p className="eyebrow">PLACES TO BEGIN</p>
 
               <h2>
-                Find your next <em>good place.</em>
+                Find your next <em> good place.</em>
               </h2>
             </div>
 
@@ -271,9 +269,7 @@ if (error) {
 
             <h2>
               Ideas for
-                
-
-              <em>the long way.</em>
+              <em> the long way.</em>
             </h2>
           </div>
 
@@ -292,7 +288,7 @@ if (error) {
       </main>
 
       <footer className="site-footer">
-        <span>© 2025 Serendib Journal</span>
+        <span>© 2026 Serendib Journal</span>
         <span>Made for slow travellers</span>
       </footer>
     </div>
