@@ -9,6 +9,7 @@ import {
   getDestination,
   type Destination,
 } from "../api/destinations";
+import { places } from "../data/travelPlaces";
 
 
 type DestinationDetailsProps = {
@@ -44,11 +45,9 @@ export default function DestinationDetails({
         const data = await getDestination(destinationId);
         setDestination(data);
       } catch (loadError) {
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Could not load destination",
-        );
+        const staticPlace = places.find((place) => place.id === destinationId);
+        if (staticPlace) setDestination(staticPlace as Destination);
+        else setError(loadError instanceof Error ? loadError.message : "Could not load destination");
       } finally {
         setLoading(false);
       }
@@ -121,6 +120,10 @@ export default function DestinationDetails({
         <img
           src={imageSource}
           alt={destination.name}
+          onError={(event) => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1400&q=85";
+          }}
         />
 
         <div className="details-hero-overlay">

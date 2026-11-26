@@ -3,9 +3,10 @@ import { Search } from "lucide-react";
 import Header from "../components/Header";
 import DestinationCard from "../components/DestinationCard";
 import { getDestinations, type Destination } from "../api/destinations";
+import { places } from "../data/travelPlaces";
 
 export default function Explore() {
-  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>(places as Destination[]);
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState("All");
   const [sortOrder, setSortOrder] = useState("name-asc");
@@ -21,9 +22,10 @@ export default function Explore() {
 
   useEffect(() => {
     getDestinations()
-      .then(setDestinations)
-      .catch((loadError: unknown) => {
-        setError(loadError instanceof Error ? loadError.message : "Could not load destinations");
+      .then((data) => { if (data.length) setDestinations(data); })
+      .catch(() => {
+        setDestinations(places as Destination[]);
+        setError("");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -103,8 +105,8 @@ export default function Explore() {
         </section>
 
         {loading && <p className="state-message">Loading destinations...</p>}
-        {error && <p className="state-message error-text">{error}</p>}
-        {!loading && !error && (
+        {error && destinations.length === 0 && <p className="state-message error-text">{error}</p>}
+        {!loading && (
           <section className="destination-grid explore-grid">
             {visibleDestinations.length > 0 ? visibleDestinations.map((destination) => (
               <DestinationCard
