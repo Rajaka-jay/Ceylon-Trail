@@ -421,3 +421,18 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .trip-map-canvas svg { min-height:205px; }
   .trip-map-stop-list { grid-template-columns:1fr; }
 }
+
+
+/* Keep home-page guide actions consistent for both links and buttons. */
+.notes-grid button { position:relative; min-height:180px; width:100%; padding:26px 27px; border:0; border-right:1px solid var(--trail-line); color:inherit; background:transparent; text-align:left; font:inherit; cursor:pointer; }
+.notes-grid button:last-child { border-right:0; }
+.notes-grid button>span { color:#0e8f94; font:9px var(--mono); }
+.notes-grid button>b { display:block; margin:17px 22px 8px 0; color:var(--trail-forest); font:500 19px var(--serif); }
+.notes-grid button>p { max-width:300px; margin:0; color:#5f6785; font:10px/1.7 var(--sans); }
+.notes-grid button>svg { position:absolute; top:27px; right:24px; width:16px; color:#0e8f94; }
+.notes-grid button:hover { background:#eef1fb; }
+@media(max-width:650px) {
+  .notes-grid button { min-height:140px; padding:20px; border-right:0; border-bottom:1px solid var(--trail-line); }
+  .notes-grid button:last-child { border-bottom:0; }
+  .notes-grid button>b { margin-top:11px; font-size:18px; }
+}
