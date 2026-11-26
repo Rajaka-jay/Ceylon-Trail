@@ -1,108 +1,32 @@
-import { ArrowLeft, Search } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useMemo, useState } from "react";
-
-import GuideCard from "../components/GuideCard";
+import { ArrowLeft, Clock, MapPin } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import Header from "../components/Header";
 import { guides } from "../data/guides";
 
-export default function Guides() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] =
-    useState("All");
+export default function GuideDetails() {
+  const { slug } = useParams<{ slug: string }>();
+  const guide = guides.find((item) => item.slug === slug);
 
-  const categories = [
-    "All",
-    ...Array.from(
-      new Set(guides.map((guide) => guide.category)),
-    ),
-  ];
+  if (!guide) return <div className="page-shell"><Header /><main className="guide-detail-missing"><p className="eyebrow">FIELD NOTES</p><h1>This note wandered off.</h1><p>Choose another practical guide for the island.</p><Link to="/guides" className="dark-cta"><ArrowLeft size={16} /> Back to field notes</Link></main></div>;
 
-  const filteredGuides = useMemo(() => {
-    const searchText = searchTerm.toLowerCase();
-
-    return guides.filter((guide) => {
-      const matchesSearch =
-        guide.title.toLowerCase().includes(searchText) ||
-        guide.excerpt.toLowerCase().includes(searchText) ||
-        guide.category.toLowerCase().includes(searchText);
-
-      const matchesCategory =
-        selectedCategory === "All" ||
-        guide.category === selectedCategory;
-
-      return matchesSearch && matchesCategory;
-    });
-  }, [searchTerm, selectedCategory]);
-
-  return (
-    <main className="guides-page">
-      <div className="guides-page-header">
-        <Link to="/" className="back-link">
-          <ArrowLeft size={16} />
-          Back to explore
-        </Link>
-
-        <p className="eyebrow">THE NOTEBOOK</p>
-
-        <h1>
-          Ideas for
-            
-
-          <em>the long way.</em>
-        </h1>
-
-        <p className="guides-intro">
-          Field notes, practical help and small stories from
-          around Sri Lanka.
-        </p>
-      </div>
-
-      <div className="guides-controls">
-        <div className="guides-search">
-          <Search size={17} />
-
-          <input
-            type="search"
-            placeholder="Search guides..."
-            value={searchTerm}
-            onChange={(event) =>
-              setSearchTerm(event.target.value)
-            }
-          />
-        </div>
-
-        <div className="category-filters">
-          {categories.map((category) => (
-            <button
-              key={category}
-              type="button"
-              className={
-                selectedCategory === category
-                  ? "category-button active"
-                  : "category-button"
-              }
-              onClick={() =>
-                setSelectedCategory(category)
-              }
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {filteredGuides.length > 0 ? (
-        <section className="guides-grid">
-          {filteredGuides.map((guide) => (
-            <GuideCard key={guide.id} guide={guide} />
-          ))}
-        </section>
-      ) : (
-        <section className="guides-empty">
-          <h2>No guides found</h2>
-          <p>Try another search or category.</p>
-        </section>
-      )}
+  return <div className="page-shell">
+    <Header />
+    <main className="guide-detail-page page-enter">
+      <Link to="/guides" className="back-link guide-back"><ArrowLeft size={16} /> All field notes</Link>
+      <section className="guide-detail-hero">
+        <img src={guide.image} alt={guide.title} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1600&q=85"; }} />
+        <div className="guide-detail-shade" />
+        <div className="guide-detail-title"><p className="eyebrow light">{guide.category} · SRI LANKA</p><h1>{guide.title}</h1><p>{guide.excerpt}</p></div>
+      </section>
+      <article className="guide-article">
+        <div className="guide-article-meta"><span><Clock size={15} /> {guide.readTime}</span><span><MapPin size={15} /> Notes from the island</span></div>
+        <p className="guide-article-intro">{guide.excerpt}</p>
+        {guide.content.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+        <div className="guide-article-end"><span>Take the long way.</span><Link to="/experiences">Find an experience</Link></div>
+      </article>
+      <section className="guide-more"><p className="eyebrow">KEEP WANDERING</p><h2>More from <em>the notebook.</em></h2><div className="guide-more-grid">
+        {guides.filter((item) => item.id !== guide.id).map((item) => <Link className="guide-more-card" to={`/guides/${item.slug}`} key={item.id}><img src={item.image} alt={item.title} loading="lazy" /><span>{item.category} · {item.readTime}</span><h3>{item.title}</h3><b>Read the note</b></Link>)}
+      </div></section>
     </main>
-  );
+  </div>;
 }
