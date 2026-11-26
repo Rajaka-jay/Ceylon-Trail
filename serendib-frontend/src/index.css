@@ -1007,11 +1007,6 @@ html[data-theme="dark"] .theme-toggle { color: #c4b5fd; }
 .journey-body button { display:flex; align-items:center; gap:9px; margin-top:17px; padding:0; border:0; color:#0e8f94; background:none; cursor:pointer; font:9px var(--mono); }
 .planner-banner { position:relative; min-height:485px; display:grid; grid-template-columns:1fr 1fr; overflow:hidden; color:#fafbff; background:#1b1f3b; }
 .planner-banner-art { position:relative; min-height:485px; overflow:hidden; background:linear-gradient(180deg,#e9b996 0%,#edc5a6 44%,#d5c4a0 100%); }
-.sun-disc { position:absolute; top:14%; left:25%; width:104px; height:104px; border-radius:50%; background:#f6e2bc; box-shadow:0 0 65px #fff1cf; }
-.hill { position:absolute; left:-10%; right:-10%; bottom:-14%; height:69%; border-radius:48% 52% 0 0 / 19% 18% 0 0; transform:rotate(-7deg); }
-.hill-back { bottom:-4%; background:#729079; }
-.hill-front { left:7%; right:-18%; bottom:-25%; height:69%; background:#304f3f; transform:rotate(11deg); }
-.tiny-path { position:absolute; right:28%; bottom:23%; z-index:1; color:#efdec1; font-size:28px; }
 .planner-banner-copy { align-self:center; max-width:520px; padding:64px 10% 68px 12%; }
 .planner-banner-copy .section-overline { color:#0e8f94; }
 .planner-banner h2 { margin:0 0 18px; color:#fafbff; font:500 clamp(38px,5vw,60px)/1.04 var(--serif); letter-spacing:-.035em; }
