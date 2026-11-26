@@ -9,6 +9,9 @@ type GuideCardProps = {
 
 function guideFallbackImage(category: string) {
   const normalized = category.toLowerCase();
+  if (normalized.includes("field notes")) {
+    return "https://cdn.kimkim.com/files/a/images/5b45731b3cd0909d725e57fa311ddb109d87fecb/original-287ed71f475c9270e007a20f899e5c11.jpg";
+  }
   if (normalized.includes("coast")) {
     return "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=85";
   }
