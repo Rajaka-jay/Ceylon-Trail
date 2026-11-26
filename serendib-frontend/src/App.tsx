@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowDown, ArrowRight, Bookmark, Check, ChevronRight, Compass, Heart, MapPin, Menu, Search, Sparkles, TrainFront, X } from "lucide-react";
-import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import DestinationDetails from "./pages/DestinationDetails";
 import Guides from "./pages/Guides";
 import GuideDetails from "./pages/GuideDetails";
 import AdminDestinations from "./pages/AdminDestinations";
 import AdminLogin from "./pages/AdminLogin";
 import Explore from "./pages/Explore";
+import Experiences from "./pages/Experiences";
 import About from "./pages/About";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { getDestinations, type Destination } from "./api/destinations";
@@ -33,6 +34,7 @@ function readIds(key: string): number[] {
 
 function HomePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [destinations, setDestinations] = useState<Destination[]>(fallbackData);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
@@ -49,10 +51,47 @@ function HomePage() {
   const [itinerary, setItinerary] = useState<Place[]>([]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showAllPlaces, setShowAllPlaces] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     getDestinations().then((data) => { if (data.length) setDestinations(data); }).catch(() => undefined);
   }, []);
+
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("planner") === "1") setShowPlanner(true);
+  }, [location.search]);
+
+  useEffect(() => {
+    const updateProgress = () => {
+      const available = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(available > 0 ? window.scrollY / available : 0);
+    };
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    return () => {
+      window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", updateProgress);
+    };
+  }, []);
+
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll(".reveal-on-scroll"));
+    if (!("IntersectionObserver" in window)) {
+      elements.forEach((element) => element.classList.add("is-visible"));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -30px 0px" });
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [category, destinations.length, showAllPlaces, filtered.length]);
 
   const enrichedPlaces = useMemo(() => {
     const known = new Map(places.map((place) => [place.name.toLowerCase(), place]));
@@ -126,7 +165,7 @@ function HomePage() {
         <a href="#top" className="trail-brand" aria-label="Ceylon Trail home"><span className="brand-emblem">ct</span><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></a>
         <button className="mobile-menu-trigger" type="button" aria-label="Open menu" onClick={() => setMobileOpen(!mobileOpen)}>{mobileOpen ? <X /> : <Menu />}</button>
         <nav className={mobileOpen ? "trail-nav is-open" : "trail-nav"} aria-label="Main navigation">
-          <a href="#discover" onClick={() => setMobileOpen(false)}>Places</a><a href="#journeys" onClick={() => setMobileOpen(false)}>Journeys</a><a href="#planner" onClick={() => setMobileOpen(false)}>Trip planner</a><a href="#field-notes" onClick={() => setMobileOpen(false)}>Field notes</a>
+          <a href="#discover" onClick={() => setMobileOpen(false)}>Places</a><a href="#journeys" onClick={() => setMobileOpen(false)}>Journeys</a><Link to="/experiences" onClick={() => setMobileOpen(false)}>Experiences</Link><a href="#planner" onClick={() => setMobileOpen(false)}>Trip planner</a><a href="#field-notes" onClick={() => setMobileOpen(false)}>Field notes</a>
         </nav>
         <div className="trail-header-actions"><button className="saved-shortcut" onClick={() => navigate("/saved")}><Bookmark size={15} /> Saved <span>{favorites.length}</span></button><button className="plan-top-button" onClick={() => { setShowPlanner(true); setMobileOpen(false); }}>Plan my trip <ArrowRight size={15} /></button></div>
       </header>
@@ -151,14 +190,14 @@ function HomePage() {
           <div className="hero-stamp"><Compass size={20} /><span>GOOD PLACES.<br />GOOD PACE.</span></div>
         </section>
 
-        <section className="intro-strip"><img className="intro-photo" src="https://traveltaleslanka.com/wp-content/uploads/2023/09/final-dl.beatsnoop.com-cjRkNX5r0K.jpg" alt="" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1606293926075-69a00dbfde81?auto=format&fit=crop&w=300&q=80"; }} /><p>Not just a list of places.<br /><strong>A little help finding your kind of island.</strong></p><span className="intro-side">CURATED WITH CARE<br />UPDATED FOR YOUR NEXT JOURNEY</span></section>
+        <section className="intro-strip reveal-on-scroll"><img className="intro-photo" src="https://traveltaleslanka.com/wp-content/uploads/2023/09/final-dl.beatsnoop.com-cjRkNX5r0K.jpg" alt="" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1606293926075-69a00dbfde81?auto=format&fit=crop&w=300&q=80"; }} /><p>Not just a list of places.<br /><strong>A little help finding your kind of island.</strong></p><span className="intro-side">CURATED WITH CARE<br />UPDATED FOR YOUR NEXT JOURNEY</span></section>
 
-        <section className="interest-section section-wrap" id="discover">
+        <section className="interest-section section-wrap reveal-on-scroll" id="discover">
           <div className="section-heading-row"><div><p className="section-overline">PICK A PATH</p><h2>What are you <em>in the mood for?</em></h2></div><p className="section-aside">The island is small enough to cross, and big enough to surprise you at every turn.</p></div>
           <div className="interest-grid">{categories.map((item, index) => <button className="interest-card" key={item.name} onClick={() => { setCategory(item.name); document.getElementById("places")?.scrollIntoView({ behavior: "smooth" }); }}><span className="interest-count">0{index + 1}</span><span className="interest-photo-wrap"><img className="interest-photo" src={item.image} alt="" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = item.fallback; }} /></span><b>{item.name}</b><small>{item.line}</small><span className="interest-arrow"><ArrowRight size={18} /></span></button>)}</div>
         </section>
 
-        <section className="places-section" id="places">
+        <section className="places-section reveal-on-scroll" id="places">
           <div className="section-wrap">
             <div className="section-heading-row places-title-row"><div><p className="section-overline">THE ISLAND, YOUR WAY</p><h2>Places that <em>stay with you.</em></h2></div><button className="quiet-link" onClick={() => { setShowAllPlaces(true); document.getElementById("places")?.scrollIntoView({ behavior: "smooth" }); }}>Explore the full guide <ArrowRight size={16} /></button></div>
             <div className="place-filters"><button className={category === "All" ? "filter-pill active" : "filter-pill"} onClick={() => setCategory("All")}>Everything</button>{categories.map((item) => <button key={item.name} className={category === item.name ? "filter-pill active" : "filter-pill"} onClick={() => setCategory(item.name)}>{item.name}</button>)}</div>
@@ -176,16 +215,16 @@ function HomePage() {
           </div>
         </section>
 
-        <section className="journeys-section section-wrap" id="journeys">
+        <section className="journeys-section section-wrap reveal-on-scroll" id="journeys">
           <div className="section-heading-row"><div><p className="section-overline">A GOOD PLACE TO START</p><h2>Journeys, <em>already taking shape.</em></h2></div><p className="section-aside">A few thoughtful routes for your first sketch. Make them yours with the trip planner.</p></div>
           <div className="journey-grid">{packages.map((item, index) => <article className="journey-card" key={item.title}><div className="journey-image"><img src={item.image} alt="" loading="lazy" /><span>{item.tag}</span></div><div className="journey-body"><div className="journey-meta"><span>{item.days}</span><span>0{index + 1}</span></div><h3>{item.title}</h3><p>{item.route}</p><button onClick={() => { setTripDays(Number.parseInt(item.days, 10)); setShowPlanner(true); }}>Make it your own <ArrowRight size={15} /></button></div></article>)}</div>
         </section>
 
-        <section className="planner-banner" id="planner"><div className="planner-banner-art"><img src="https://cdn.kimkim.com/files/a/images/5b45731b3cd0909d725e57fa311ddb109d87fecb/original-287ed71f475c9270e007a20f899e5c11.jpg" alt="A train crossing tea plantations in Sri Lanka’s hill country" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1100&q=85"; }} /></div><div className="planner-banner-copy"><p className="section-overline">YOUR TRIP, YOUR RHYTHM</p><h2>Somewhere between<br /><em>a plan and a detour.</em></h2><p>Tell us what you love and how long you have. We’ll sketch a route that keeps the long drives in check.</p><button className="dark-cta" onClick={() => setShowPlanner(true)}>Build my island route <ArrowRight size={16} /></button></div><div className="planner-number">02 <span>/ 04</span></div></section>
+        <section className="planner-banner reveal-on-scroll" id="planner"><div className="planner-banner-art"><img src="https://cdn.kimkim.com/files/a/images/5b45731b3cd0909d725e57fa311ddb109d87fecb/original-287ed71f475c9270e007a20f899e5c11.jpg" alt="A train crossing tea plantations in Sri Lanka’s hill country" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1100&q=85"; }} /></div><div className="planner-banner-copy"><p className="section-overline">YOUR TRIP, YOUR RHYTHM</p><h2>Somewhere between<br /><em>a plan and a detour.</em></h2><p>Tell us what you love and how long you have. We’ll sketch a route that keeps the long drives in check.</p><button className="dark-cta" onClick={() => setShowPlanner(true)}>Build my island route <ArrowRight size={16} /></button></div><div className="planner-number">02 <span>/ 04</span></div></section>
 
-        <section className="travel-notes section-wrap" id="field-notes"><div className="notes-head"><p className="section-overline">BEFORE YOU GO</p><h2>A few useful <em>little things.</em></h2><p>Thoughtful travel begins with simple, up-to-date information.</p></div><div className="notes-grid"><a href="https://www.srilanka.travel/" target="_blank" rel="noreferrer"><span>01</span><b>Official visitor information</b><p>Entry guidance, destination information and travel resources from Sri Lanka Tourism.</p><ChevronRight /></a><a href="https://railway.gov.lk/" target="_blank" rel="noreferrer"><span>02</span><b>Railway updates</b><p>Check the official railway site for current services and passenger information.</p><ChevronRight /></a><a href="https://www.srilanka.travel/plan-your-trip" target="_blank" rel="noreferrer"><span>03</span><b>Travel responsibly</b><p>Support local businesses, respect sacred places and leave wildlife its space.</p><ChevronRight /></a></div></section>
+        <section className="travel-notes section-wrap reveal-on-scroll" id="field-notes"><div className="notes-head"><p className="section-overline">BEFORE YOU GO</p><h2>A few useful <em>little things.</em></h2><p>Thoughtful travel begins with simple, up-to-date information.</p></div><div className="notes-grid"><a href="https://www.srilanka.travel/" target="_blank" rel="noreferrer"><span>01</span><b>Official visitor information</b><p>Entry guidance, destination information and travel resources from Sri Lanka Tourism.</p><ChevronRight /></a><a href="https://railway.gov.lk/" target="_blank" rel="noreferrer"><span>02</span><b>Railway updates</b><p>Check the official railway site for current services and passenger information.</p><ChevronRight /></a><a href="https://www.srilanka.travel/plan-your-trip" target="_blank" rel="noreferrer"><span>03</span><b>Travel responsibly</b><p>Support local businesses, respect sacred places and leave wildlife its space.</p><ChevronRight /></a></div></section>
       </main>
-      <footer className="trail-footer"><div className="footer-brand"><span className="brand-emblem">ct</span><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></div><p>A field guide to the island we call home.</p><div className="footer-links"><a href="#discover">Explore</a><a href="#planner">Trip planner</a><a href="/Ceylon-Trail/#/about">About</a><a href="https://www.srilanka.travel/" target="_blank" rel="noreferrer">Sri Lanka Tourism ↗</a></div><small className="copyright">© 2026 Ceylon Trail · Made with care in Sri Lanka</small></footer>
+      <footer className="trail-footer"><div className="footer-brand"><span className="brand-emblem">ct</span><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></div><p>A field guide to the island we call home.</p><div className="footer-links"><a href="#discover">Explore</a><a href="#planner">Trip planner</a><a href="/Ceylon-Trail/#/experiences">Experiences</a><a href="/Ceylon-Trail/#/about">About</a><a href="https://www.srilanka.travel/" target="_blank" rel="noreferrer">Sri Lanka Tourism ↗</a></div><small className="copyright">© 2026 Ceylon Trail · Made with care in Sri Lanka</small></footer>
 
       {activePlace && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setActivePlace(null); }}><section className="place-modal" role="dialog" aria-modal="true" aria-label={activePlace.name}><button className="modal-close" onClick={() => setActivePlace(null)} aria-label="Close details"><X /></button><img src={activePlace.imageUrl || "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"} alt={activePlace.name} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"; }} /><div className="modal-content"><p className="section-overline">{activePlace.category?.name} · {activePlace.region}</p><h2>{activePlace.name}</h2><p>{activePlace.shortDescription}</p><div className="modal-facts"><span><MapPin />{activePlace.location}</span><span><Compass />{activePlace.duration}</span><span><Sparkles />{activePlace.bestFor}</span></div><div className="modal-actions"><button className="dark-cta" onClick={() => { if (!planned.includes(activePlace.id)) togglePlan(activePlace.id); setShowPlanner(true); setActivePlace(null); }}>Add to my route <ArrowRight size={16} /></button><button className="modal-save" onClick={() => toggleFavorite(activePlace.id)}><Heart size={16} fill={favorites.includes(activePlace.id) ? "currentColor" : "none"} /> {favorites.includes(activePlace.id) ? "Saved" : "Save place"}</button></div></div></section></div>}
 
@@ -209,5 +248,5 @@ function SavedPage() {
 }
 
 export default function App() {
-  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetails favoriteIds={readIds("serendib-favorites")} onToggleFavorite={() => undefined} />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /></Routes>;
+  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/experiences" element={<Experiences />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetails favoriteIds={readIds("serendib-favorites")} onToggleFavorite={() => undefined} />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /></Routes>;
 }
