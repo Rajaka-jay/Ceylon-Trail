@@ -24,13 +24,14 @@ export default function DestinationCard({
     destination.imageUrl || fallbackImage;
 
   return (
-    <article className="destination-card">
+    <article className="destination-card tilt-card">
       <div className="card-image-wrap">
         <Link to={`/destinations/${destination.id}`}>
           <img
             src={imageSource}
             alt={destination.name}
             loading="lazy"
+            onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackImage; }}
           />
         </Link>
 
