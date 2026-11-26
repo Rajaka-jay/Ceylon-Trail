@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowDown, ArrowRight, Bookmark, Check, ChevronRight, Compass, Heart, MapPin, Menu, Mountain, Search, Sparkles, TrainFront, Waves, X } from "lucide-react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import DestinationDetails from "./pages/DestinationDetails";
-import SavedPlaces from "./pages/SavedPlaces";
 import Guides from "./pages/Guides";
 import GuideDetails from "./pages/GuideDetails";
 import AdminDestinations from "./pages/AdminDestinations";
@@ -63,7 +62,8 @@ function HomePage() {
   const [travellers, setTravellers] = useState("Couple");
   const [selectedInterests, setSelectedInterests] = useState<string[]>(["Culture", "Nature"]);
   const [itinerary, setItinerary] = useState<Place[]>([]);
-  const [mobileOpen, setMobileOpen] = useState(false);\n  const [showAllPlaces, setShowAllPlaces] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [showAllPlaces, setShowAllPlaces] = useState(false);
 
   useEffect(() => {
     getDestinations().then((data) => { if (data.length) setDestinations(data); }).catch(() => undefined);
@@ -71,12 +71,14 @@ function HomePage() {
 
   const enrichedPlaces = useMemo(() => {
     const known = new Map(places.map((place) => [place.name.toLowerCase(), place]));
-    return destinations.map((item) => {
-      const match = known.get(item.name.toLowerCase());
-      return match ? { ...match, ...item, tags: match.tags } : {
-        ...item, tags: [item.category?.name?.toLowerCase() ?? "explore"], duration: "Half day", bestFor: item.category?.name ?? "Exploring", region: item.location.split("·").pop()?.trim() ?? "Sri Lanka",
-      } as Place;
+    const additional = destinations.filter((item) => !known.has(item.name.toLowerCase()));
+    const curated = places.map((place) => {
+      const remote = destinations.find((item) => item.name.toLowerCase() === place.name.toLowerCase());
+      return remote ? { ...place, ...remote, id: place.id, category: place.category, tags: place.tags } : place;
     });
+    return [...curated, ...additional.map((item) => ({
+      ...item, tags: [item.category?.name?.toLowerCase() ?? "explore"], duration: "Half day", bestFor: item.category?.name ?? "Exploring", region: item.location.split("·").pop()?.trim() ?? "Sri Lanka",
+    } as Place))];
   }, [destinations]);
 
   const filtered = useMemo(() => {
@@ -122,11 +124,12 @@ function HomePage() {
     const pool = matches.length ? matches : enrichedPlaces;
     const countPerDay = pace === "Relaxed" ? 1 : pace === "Fast-paced" ? 3 : 2;
     const limit = Math.min(tripDays * countPerDay, pool.length);
-    const selected = [...pool].sort((a, b) => {
+    const ordered = [...pool].sort((a, b) => {
       const order = ["Cultural Triangle", "Hill Country", "South Coast", "East Coast", "Southeast"];
       return order.indexOf(a.region) - order.indexOf(b.region);
-    }).slice(0, limit);
-    setItinerary(selected);
+    });
+    const pinned = planned.map((id) => enrichedPlaces.find((place) => place.id === id)).filter((place): place is Place => Boolean(place));
+    const selected = [...new Map([...pinned, ...ordered].map((place) => [place.id, place])).values()].slice(0, Math.max(limit, pinned.length));    setItinerary(selected);
   }
   const shownPlaces = showAllPlaces ? filtered : filtered.slice(0, 6);
 
