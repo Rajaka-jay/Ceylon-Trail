@@ -91,7 +91,7 @@ function HomePage() {
     }, { threshold: 0.12, rootMargin: "0px 0px -30px 0px" });
     elements.forEach((element) => observer.observe(element));
     return () => observer.disconnect();
-  }, [category, destinations.length, showAllPlaces, filtered.length]);
+  }, [category, destinations.length, showAllPlaces, query]);
 
   const enrichedPlaces = useMemo(() => {
     const known = new Map(places.map((place) => [place.name.toLowerCase(), place]));
@@ -159,7 +159,7 @@ function HomePage() {
   const shownPlaces = showAllPlaces ? filtered : filtered.slice(0, 6);
 
   return (
-    <div className="trail-app">
+    <div className="trail-app">\n      <div className="site-scroll-progress" aria-hidden="true" style={{ transform: `scaleX(${scrollProgress})` }} />
       <div className="announcement"><span className="announcement-dot" /> A little island with a lot of ways to get lost <span className="announcement-sep">·</span> Find your own way in <ArrowRight size={13} /></div>
       <header className="trail-header">
         <a href="#top" className="trail-brand" aria-label="Ceylon Trail home"><span className="brand-emblem">ct</span><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></a>
