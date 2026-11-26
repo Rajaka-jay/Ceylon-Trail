@@ -7,8 +7,16 @@ type GuideCardProps = {
   guide: Guide;
 };
 
-const guideFallbackImage =
-  "https://images.unsplash.com/photo-1606293926075-69a00dbfde81?auto=format&fit=crop&w=1200&q=85";
+function guideFallbackImage(category: string) {
+  const normalized = category.toLowerCase();
+  if (normalized.includes("coast")) {
+    return "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=85";
+  }
+  if (normalized.includes("practical")) {
+    return "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85";
+  }
+  return "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85";
+}
 
 export default function GuideCard({
   guide,
@@ -17,7 +25,7 @@ export default function GuideCard({
     <article className="guide-card tilt-card">
       <Link to={`/guides/${guide.slug}`}>
         <div className="guide-card-image">
-          <img src={guide.image || guideFallbackImage} alt={guide.title} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = guideFallbackImage; }} />
+          <img src={guide.image || guideFallbackImage(guide.category)} alt={guide.title} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = guideFallbackImage(guide.category); }} />
         </div>
       </Link>
 
