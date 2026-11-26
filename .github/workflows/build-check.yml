@@ -1,0 +1,33 @@
+name: Build Ceylon Trail frontend
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "serendib-frontend/**"
+      - ".github/workflows/build-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: serendib-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: serendib-frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: serendib-frontend
+        run: npm run build
