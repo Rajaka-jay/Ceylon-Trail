@@ -159,7 +159,8 @@ function HomePage() {
   const shownPlaces = showAllPlaces ? filtered : filtered.slice(0, 6);
 
   return (
-    <div className="trail-app">\n      <div className="site-scroll-progress" aria-hidden="true" style={{ transform: `scaleX(${scrollProgress})` }} />
+    <div className="trail-app">
+      <div className="site-scroll-progress" aria-hidden="true" style={{ transform: `scaleX(${scrollProgress})` }} />
       <div className="announcement"><span className="announcement-dot" /> A little island with a lot of ways to get lost <span className="announcement-sep">·</span> Find your own way in <ArrowRight size={13} /></div>
       <header className="trail-header">
         <a href="#top" className="trail-brand" aria-label="Ceylon Trail home"><span className="brand-emblem">ct</span><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></a>
