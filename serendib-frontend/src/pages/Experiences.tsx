@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Bookmark, Check, Compass, MapPin, Search } from "lucide-react";
 import Header from "../components/Header";
+import { useNavigate } from "react-router-dom";
 import { places } from "../data/travelPlaces";
 
 type Experience = {
@@ -49,6 +50,19 @@ export default function Experiences() {
     );
   }, [category, query]);
 
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll(".reveal-on-scroll"));
+    if (!("IntersectionObserver" in window)) {
+      elements.forEach((element) => element.classList.add("is-visible"));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+      if (entry.isIntersecting) { entry.target.classList.add("is-visible"); observer.unobserve(entry.target); }
+    }), { threshold: 0.12 });
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [category, query, filtered.length]);
+
   function addToPlan(id: number) {
     setPlanned((current) => {
       const next = current.includes(id) ? current : [...current, id];
@@ -92,7 +106,7 @@ export default function Experiences() {
             })}
           </div>
           {filtered.length === 0 && <div className="experiences-empty"><h2>No experiences match</h2><p>Try another search or category.</p><button onClick={() => { setQuery(""); setCategory("All"); }}>Clear filters</button></div>}
-          {planned.length > 0 && <div className="experience-route-callout"><div><p className="section-overline">YOUR JOURNEY IS TAKING SHAPE</p><h2>{planned.length} {planned.length === 1 ? "stop" : "stops"} saved for your route</h2></div><a className="dark-cta" href="/Ceylon-Trail/#planner">Continue planning <ArrowRight size={16} /></a></div>}
+          {planned.length > 0 && <div className="experience-route-callout"><div><p className="section-overline">YOUR JOURNEY IS TAKING SHAPE</p><h2>{planned.length} {planned.length === 1 ? "stop" : "stops"} saved for your route</h2></div><button className="dark-cta" onClick={() => navigate("/?planner=1")}>Continue planning <ArrowRight size={16} /></button></div>}
         </section>
       </main>
     </div>
