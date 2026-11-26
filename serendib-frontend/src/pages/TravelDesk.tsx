@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeftRight,
+  ArrowRight,
   ArrowUpRight,
   CalendarDays,
   Check,
@@ -19,6 +20,7 @@ import {
   Wind,
 } from "lucide-react";
 import Header from "../components/Header";
+import { Link } from "react-router-dom";
 
 type IslandStop = {
   name: string;
@@ -78,6 +80,7 @@ const officialServices = [
   { title: "Tourist map", description: "Open the official map and explore the island’s regions and attractions.", href: "https://www.srilanka.travel/tourist-map", label: "Tourist map" },
   { title: "Public holidays", description: "Check Poya days and public holidays before confirming opening times.", href: "https://www.srilanka.travel/public-holidays", label: "Holiday calendar" },
   { title: "Travel notices", description: "Check official notices for current visitor updates and advisories.", href: "https://www.srilanka.travel/situation_update/", label: "Official notices" },
+  { title: "Events and festivals", description: "See the latest event listings and cultural dates from Sri Lanka Tourism.", href: "https://www.srilanka.travel/", label: "Browse events" },
 ];
 
 function getWeatherLabel(code: number) {
@@ -330,7 +333,7 @@ export default function TravelDesk() {
       <Header />
       <main className="travel-desk-page page-enter">
         <section className="travel-desk-hero">
-          <div><p className="desk-kicker">THE ISLAND, WELL PREPARED</p><h1>Useful details for<br /><em>the way there.</em></h1><p>Weather, money, route notes and trusted links — gathered in one calm place before you set out.</p><a className="desk-hero-link" href="https://www.srilanka.travel/before-you-go" target="_blank" rel="noreferrer">Start with official arrival guidance <ArrowUpRight size={16} /></a></div>
+          <div><p className="desk-kicker">THE ISLAND, WELL PREPARED</p><h1>Useful details for<br /><em>the way there.</em></h1><p>Weather, money, route notes and trusted links — gathered in one calm place before you set out.</p><a className="desk-hero-link" href="https://www.srilanka.travel/before-you-go" target="_blank" rel="noreferrer">Start with official arrival guidance <ArrowUpRight size={16} /></a><Link className="desk-planner-link" to="/?planner=1">Sketch my island route <ArrowRight size={16} /></Link></div>
           <div className="desk-hero-index"><span>CEYLON TRAIL</span><b>01</b><span>TRAVEL DESK</span></div>
         </section>
 
