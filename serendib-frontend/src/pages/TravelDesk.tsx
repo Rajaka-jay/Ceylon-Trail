@@ -111,6 +111,13 @@ function formatIslandDate(value: string, weekday = false) {
     : { hour: "numeric", minute: "2-digit", timeZone: "Asia/Colombo" }).format(date);
 }
 
+function getWeatherScene(code: number) {
+  if (code >= 95) return "stormy";
+  if (code >= 51 && code <= 82) return "rainy";
+  if (code <= 2) return "sunny";
+  return "cloudy";
+}
+
 function WeatherTool() {
   const [stopName, setStopName] = useState("Colombo");
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
@@ -138,16 +145,20 @@ function WeatherTool() {
       .then(setWeather)
       .catch((loadError: unknown) => {
         if (loadError instanceof DOMException && loadError.name === "AbortError") return;
-        setError("Live weather could not load. Check the official forecast before travelling.");
+        setError("Live weather could not load right now. Try another town or reload.");
         setWeather(null);
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, [selectedStop.latitude, selectedStop.longitude]);
 
+  const todayHigh = weather?.daily.temperature_2m_max[0] ?? 0;
+  const todayLow = weather?.daily.temperature_2m_min[0] ?? 0;
+  const rainChance = weather?.daily.precipitation_probability_max[0] ?? 0;
+
   return (
     <section className="desk-panel weather-panel" aria-labelledby="weather-title">
-      <div className="desk-panel-heading">
+      <div className="desk-panel-heading weather-heading">
         <div><p className="desk-kicker">A QUICK LOOK OUTSIDE</p><h2 id="weather-title">Weather by region</h2></div>
         <label className="desk-select-label"><span className="sr-only">Choose a town for the forecast</span>
           <select value={stopName} onChange={(event) => setStopName(event.target.value)}>
@@ -155,15 +166,37 @@ function WeatherTool() {
           </select>
         </label>
       </div>
-      {loading && <p className="desk-status" role="status">Loading the latest forecast…</p>}
-      {!loading && error && <div className="desk-error" role="status">{error}<span>Try another town or reload the page.</span></div>}
+      {loading && <p className="desk-status weather-status" role="status">Reading the sky over {selectedStop.name}…</p>}
+      {!loading && error && <div className="desk-error weather-status" role="status">{error}</div>}
       {!loading && weather && <>
-        <div className="weather-now">
-          <div className="weather-current-icon"><WeatherIcon code={weather.current.weather_code} size={35} /></div>
-          <div><p className="weather-place">{selectedStop.name}, Sri Lanka</p><div className="weather-temp">{Math.round(weather.current.temperature_2m)}°<span>C</span></div><p className="weather-condition">{getWeatherLabel(weather.current.weather_code)} · feels like {Math.round(weather.current.apparent_temperature)}°C</p></div>
-          <div className="weather-facts"><span><Thermometer size={15} /> Humidity {Math.round(weather.current.relative_humidity_2m)}%</span><span><Wind size={15} /> Wind {Math.round(weather.current.wind_speed_10m)} km/h</span><span>Updated {formatIslandDate(weather.current.time)}</span></div>
+        <div className="weather-showcase">
+          <div className="weather-current">
+            <div className="weather-live-label"><span className="weather-live-dot" /> LIVE ISLAND FORECAST</div>
+            <p className="weather-place">{selectedStop.name}, Sri Lanka</p>
+            <div className="weather-temp">{Math.round(weather.current.temperature_2m)}°<span>C</span></div>
+            <p className="weather-condition">{getWeatherLabel(weather.current.weather_code)} · feels like {Math.round(weather.current.apparent_temperature)}°C</p>
+            <p className="weather-high-low">Today <b>H {Math.round(todayHigh)}°</b><span>·</span><b>L {Math.round(todayLow)}°</b><span>·</span>{rainChance}% chance of rain</p>
+          </div>
+          <div className={`weather-visual weather-visual--${getWeatherScene(weather.current.weather_code)}`} aria-hidden="true">
+            <div className="weather-scene-stars"><i /><i /><i /><i /></div>
+            <div className="weather-orbit weather-orbit--outer" />
+            <div className="weather-orbit weather-orbit--inner" />
+            <div className="weather-sun"><span /></div>
+            <div className="weather-cloud weather-cloud--back"><i /><i /><i /></div>
+            <div className="weather-cloud weather-cloud--front"><i /><i /><i /></div>
+            <div className="weather-rain"><i /><i /><i /><i /><i /></div>
+            <div className="weather-scene-glow" />
+            <div className="weather-scene-caption"><span>RIGHT NOW</span><b>{getWeatherLabel(weather.current.weather_code)}</b></div>
+          </div>
         </div>
-        <div className="weather-forecast">{weather.daily.time.map((day, index) => <div className="weather-day" key={day}><span>{index === 0 ? "Today" : formatIslandDate(day, true)}</span><WeatherIcon code={weather.daily.weather_code[index] ?? 0} size={18} /><b>{Math.round(weather.daily.temperature_2m_max[index] ?? 0)}° / {Math.round(weather.daily.temperature_2m_min[index] ?? 0)}°</b><small>{weather.daily.precipitation_probability_max[index] ?? 0}% rain chance</small></div>)}</div>
+        <div className="weather-detail-grid">
+          <div className="weather-detail"><Thermometer size={17} /><span>Feels like</span><b>{Math.round(weather.current.apparent_temperature)}°C</b></div>
+          <div className="weather-detail"><Wind size={17} /><span>Wind</span><b>{Math.round(weather.current.wind_speed_10m)} km/h</b></div>
+          <div className="weather-detail"><CloudRain size={17} /><span>Rain chance</span><b>{rainChance}%</b></div>
+          <div className="weather-detail"><CloudSun size={17} /><span>Humidity</span><b>{Math.round(weather.current.relative_humidity_2m)}%</b></div>
+        </div>
+        <div className="weather-forecast-heading"><span>Three-day outlook</span><small>Updated {formatIslandDate(weather.current.time)}</small></div>
+        <div className="weather-forecast">{weather.daily.time.map((day, index) => <div className="weather-day" key={day}><span>{index === 0 ? "Today" : formatIslandDate(day, true)}</span><WeatherIcon code={weather.daily.weather_code[index] ?? 0} size={18} /><b>{Math.round(weather.daily.temperature_2m_max[index] ?? 0)}° <i>/</i> {Math.round(weather.daily.temperature_2m_min[index] ?? 0)}°</b><small>{weather.daily.precipitation_probability_max[index] ?? 0}% rain chance</small></div>)}</div>
         <p className="desk-attribution">Forecast by Open-Meteo. Conditions are approximate and can change; confirm local advisories before outdoor trips.</p>
       </>}
     </section>
