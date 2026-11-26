@@ -64,9 +64,9 @@ export default function Experiences() {
     return () => observer.disconnect();
   }, [category, query, filtered.length]);
 
-  function addToPlan(id: number) {
+  function togglePlan(id: number) {
     setPlanned((current) => {
-      const next = current.includes(id) ? current : [...current, id];
+      const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
       localStorage.setItem("ceylon-trail-plan", JSON.stringify(next));
       return next;
     });
@@ -100,9 +100,9 @@ export default function Experiences() {
             {filtered.map((item, index) => {
               const destination = places.find((place) => place.id === item.destinationId);
               const saved = planned.includes(item.destinationId);
-              return <article className="experience-card reveal-on-scroll" key={item.id} style={{transitionDelay: `${(index % 3) * 80}ms`}}>
+              return <article className="experience-card reveal-on-scroll tilt-card" key={item.id} style={{transitionDelay: `${(index % 3) * 80}ms`}}>
                 <div className="experience-photo"><img src={item.image} alt={item.title} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackImages[item.category]; }} /><span>{item.category}</span></div>
-                <div className="experience-card-copy"><div className="experience-location"><MapPin size={14} />{item.location}</div><h2>{item.title}</h2><p>{item.description}</p><div className="experience-card-bottom"><small><Compass size={14} />{item.duration}</small><button onClick={() => addToPlan(item.destinationId)} aria-pressed={saved}>{saved ? <><Check size={15} /> In your route</> : <><Bookmark size={15} /> Add to route</>}</button></div>{destination && <span className="sr-only">Suggested destination: {destination.name}</span>}</div>
+                <div className="experience-card-copy"><div className="experience-location"><MapPin size={14} />{item.location}</div><h2>{item.title}</h2><p>{item.description}</p><div className="experience-card-bottom"><small><Compass size={14} />{item.duration}</small><button onClick={() => togglePlan(item.destinationId)} aria-pressed={saved} aria-label={saved ? `Remove ${item.title} from your route` : `Add ${item.title} to your route`}>{saved ? <><Check size={15} /> In your route</> : <><Bookmark size={15} /> Add to route</>}</button></div>{destination && <span className="sr-only">Suggested destination: {destination.name}</span>}</div>
               </article>;
             })}
           </div>

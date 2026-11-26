@@ -207,7 +207,7 @@ function HomePage() {
             <div className="curated-grid">{shownPlaces.map((place, index) => {
               const known = places.find((item) => item.name.toLowerCase() === place.name.toLowerCase());
               const image = place.imageUrl || "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85";
-              return <article className={index === 0 ? "place-card place-card-feature" : "place-card"} key={place.id}>
+              return <article className={index === 0 ? "place-card place-card-feature tilt-card" : "place-card tilt-card"} key={place.id}>
                 <button className="place-image-button" onClick={() => setActivePlace(known ?? { ...place, tags: [], duration: "Half day", bestFor: place.category?.name ?? "Exploring", region: place.location })} aria-label={"View " + place.name}><img src={image} alt={place.name} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"; }} /><span className="place-label">{place.category?.name ?? "Island guide"}</span></button>
                 <button className={favorites.includes(place.id) ? "place-save is-saved" : "place-save"} onClick={() => toggleFavorite(place.id)} aria-label={favorites.includes(place.id) ? "Remove saved place" : "Save place"} aria-pressed={favorites.includes(place.id)}><Heart size={17} fill={favorites.includes(place.id) ? "currentColor" : "none"} /></button>
                 <div className="place-card-body"><div className="place-location"><MapPin size={13} />{place.location}</div><h3>{place.name}</h3><p>{place.shortDescription}</p><button className="place-read" onClick={() => setActivePlace(known ?? { ...place, tags: [], duration: "Half day", bestFor: place.category?.name ?? "Exploring", region: place.location })}>Get to know it <ArrowRight size={15} /></button></div>
@@ -220,7 +220,7 @@ function HomePage() {
 
         <section className="journeys-section section-wrap reveal-on-scroll" id="journeys">
           <div className="section-heading-row"><div><p className="section-overline">A GOOD PLACE TO START</p><h2>Journeys, <em>already taking shape.</em></h2></div><p className="section-aside">A few thoughtful routes for your first sketch. Make them yours with the trip planner.</p></div>
-          <div className="journey-grid">{packages.map((item, index) => <article className="journey-card" key={item.title}><div className="journey-image"><img src={item.image} alt="" loading="lazy" /><span>{item.tag}</span></div><div className="journey-body"><div className="journey-meta"><span>{item.days}</span><span>0{index + 1}</span></div><h3>{item.title}</h3><p>{item.route}</p><button onClick={() => { setTripDays(Number.parseInt(item.days, 10)); setShowPlanner(true); }}>Make it your own <ArrowRight size={15} /></button></div></article>)}</div>
+          <div className="journey-grid">{packages.map((item, index) => <article className="journey-card tilt-card" key={item.title}><div className="journey-image"><img src={item.image} alt="" loading="lazy" /><span>{item.tag}</span></div><div className="journey-body"><div className="journey-meta"><span>{item.days}</span><span>0{index + 1}</span></div><h3>{item.title}</h3><p>{item.route}</p><button onClick={() => { setTripDays(Number.parseInt(item.days, 10)); setShowPlanner(true); }}>Make it your own <ArrowRight size={15} /></button></div></article>)}</div>
         </section>
 
         <section className="planner-banner reveal-on-scroll" id="planner"><div className="planner-banner-art"><img src="https://cdn.kimkim.com/files/a/images/5b45731b3cd0909d725e57fa311ddb109d87fecb/original-287ed71f475c9270e007a20f899e5c11.jpg" alt="A train crossing tea plantations in Sri Lanka’s hill country" loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1100&q=85"; }} /></div><div className="planner-banner-copy"><p className="section-overline">YOUR TRIP, YOUR RHYTHM</p><h2>Somewhere between<br /><em>a plan and a detour.</em></h2><p>Tell us what you love and how long you have. We’ll sketch a route that keeps the long drives in check.</p><button className="dark-cta" onClick={() => setShowPlanner(true)}>Build my island route <ArrowRight size={16} /></button></div><div className="planner-number">02 <span>/ 04</span></div></section>
@@ -247,9 +247,79 @@ function SavedPage() {
     setFavoriteIds(next);
     localStorage.setItem("serendib-favorites", JSON.stringify(next));
   }
-  return <div className="trail-app"><header className="trail-header"><a href="/Ceylon-Trail/#/" className="trail-brand"><span className="brand-emblem">ct</span><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></a><a className="plan-top-button" href="/Ceylon-Trail/#/">Back to the island <ArrowRight size={15} /></a></header><main className="saved-page"><div className="section-wrap" style={{paddingTop:64,paddingBottom:90}}><p className="section-overline">YOUR TRAVEL LIST</p><h1 style={{font:"500 clamp(42px,7vw,70px) var(--serif)",color:"var(--trail-forest)"}}>Saved <em style={{color:"#b66a4c"}}>places.</em></h1><p style={{color:"#718078",fontSize:13}}>Keep the places you want to remember for your next island journey.</p>{savedPlaces.length === 0 ? <div className="no-results"><Bookmark /><h3>No saved places yet</h3><p>Tap the heart on a place to keep it here for later.</p><a className="dark-cta" href="/Ceylon-Trail/#/">Explore places <ArrowRight size={15} /></a></div> : <div className="curated-grid">{savedPlaces.map((place) => { const known=places.find((item)=>item.id===place.id); const image=place.imageUrl || "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"; return <article className="place-card" key={place.id}><img src={image} alt={place.name} style={{width:"100%",height:220,objectFit:"cover"}} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"; }} /><div className="place-card-body"><div className="place-location"><MapPin size={13}/>{place.location}</div><h3>{place.name}</h3><p>{place.shortDescription}</p><button className="place-read" onClick={()=>remove(place.id)}><Heart size={15} fill="currentColor"/> Remove from saved</button>{known && <a className="place-read" href="/Ceylon-Trail/#/">Back to island guide <ArrowRight size={15}/></a>}</div></article>; })}</div>}</div></main></div>;
+  return <div className="trail-app"><header className="trail-header"><a href="/Ceylon-Trail/#/" className="trail-brand"><span className="brand-emblem">ct</span><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></a><a className="plan-top-button" href="/Ceylon-Trail/#/">Back to the island <ArrowRight size={15} /></a></header><main className="saved-page"><div className="section-wrap" style={{paddingTop:64,paddingBottom:90}}><p className="section-overline">YOUR TRAVEL LIST</p><h1 style={{font:"500 clamp(42px,7vw,70px) var(--serif)",color:"var(--trail-forest)"}}>Saved <em style={{color:"#b66a4c"}}>places.</em></h1><p style={{color:"#718078",fontSize:13}}>Keep the places you want to remember for your next island journey.</p>{savedPlaces.length === 0 ? <div className="no-results"><Bookmark /><h3>No saved places yet</h3><p>Tap the heart on a place to keep it here for later.</p><a className="dark-cta" href="/Ceylon-Trail/#/">Explore places <ArrowRight size={15} /></a></div> : <div className="curated-grid">{savedPlaces.map((place) => { const known=places.find((item)=>item.id===place.id); const image=place.imageUrl || "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"; return <article className="place-card tilt-card" key={place.id}><img src={image} alt={place.name} style={{width:"100%",height:220,objectFit:"cover"}} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"; }} /><div className="place-card-body"><div className="place-location"><MapPin size={13}/>{place.location}</div><h3>{place.name}</h3><p>{place.shortDescription}</p><button className="place-read" onClick={()=>remove(place.id)}><Heart size={15} fill="currentColor"/> Remove from saved</button>{known && <a className="place-read" href="/Ceylon-Trail/#/">Back to island guide <ArrowRight size={15}/></a>}</div></article>; })}</div>}</div></main></div>;
+}
+
+function DestinationDetailsRoute() {
+  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => readIds("serendib-favorites"));
+
+  function toggleFavorite(destinationId: number) {
+    setFavoriteIds((current) => {
+      const next = current.includes(destinationId)
+        ? current.filter((id) => id !== destinationId)
+        : [...current, destinationId];
+      localStorage.setItem("serendib-favorites", JSON.stringify(next));
+      return next;
+    });
+  }
+
+  return <DestinationDetails favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite} />;
 }
 
 export default function App() {
-  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/experiences" element={<Experiences />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetails favoriteIds={readIds("serendib-favorites")} onToggleFavorite={() => undefined} />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /><Route path="/login" element={<UserAccess />} /><Route path="/register" element={<UserAccess />} /><Route path="/account" element={<UserAccess />} /></Routes>;
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let activeCard: HTMLElement | null = null;
+    const resetCard = (card: HTMLElement) => {
+      card.style.setProperty("--tilt-x", "0deg");
+      card.style.setProperty("--tilt-y", "0deg");
+      card.style.setProperty("--spot-x", "50%");
+      card.style.setProperty("--spot-y", "50%");
+      card.classList.remove("is-tilting");
+    };
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType === "touch") return;
+      const target = event.target instanceof Element
+        ? event.target.closest<HTMLElement>(".tilt-card")
+        : null;
+      if (activeCard && activeCard !== target) resetCard(activeCard);
+      activeCard = target;
+      if (!target) return;
+
+      const bounds = target.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      const x = (event.clientX - bounds.left) / bounds.width;
+      const y = (event.clientY - bounds.top) / bounds.height;
+      target.style.setProperty("--tilt-x", `${((0.5 - y) * 6).toFixed(2)}deg`);
+      target.style.setProperty("--tilt-y", `${((x - 0.5) * 7).toFixed(2)}deg`);
+      target.style.setProperty("--spot-x", `${(x * 100).toFixed(1)}%`);
+      target.style.setProperty("--spot-y", `${(y * 100).toFixed(1)}%`);
+      target.classList.add("is-tilting");
+    };
+    const onPointerOut = (event: PointerEvent) => {
+      if (!activeCard) return;
+      const nextTarget = event.relatedTarget;
+      if (!(nextTarget instanceof Node) || !activeCard.contains(nextTarget)) {
+        resetCard(activeCard);
+        activeCard = null;
+      }
+    };
+    const onBlur = () => {
+      if (activeCard) resetCard(activeCard);
+      activeCard = null;
+    };
+
+    document.addEventListener("pointermove", onPointerMove, { passive: true });
+    document.addEventListener("pointerout", onPointerOut, { passive: true });
+    window.addEventListener("blur", onBlur);
+    return () => {
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerout", onPointerOut);
+      window.removeEventListener("blur", onBlur);
+      if (activeCard) resetCard(activeCard);
+    };
+  }, []);
+
+  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/experiences" element={<Experiences />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetailsRoute />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /><Route path="/login" element={<UserAccess />} /><Route path="/register" element={<UserAccess />} /><Route path="/account" element={<UserAccess />} /></Routes>;
 }
