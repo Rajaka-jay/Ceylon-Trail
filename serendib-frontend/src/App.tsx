@@ -129,7 +129,8 @@ function HomePage() {
       return order.indexOf(a.region) - order.indexOf(b.region);
     });
     const pinned = planned.map((id) => enrichedPlaces.find((place) => place.id === id)).filter((place): place is Place => Boolean(place));
-    const selected = [...new Map([...pinned, ...ordered].map((place) => [place.id, place])).values()].slice(0, Math.max(limit, pinned.length));    setItinerary(selected);
+    const selected = [...new Map([...pinned, ...ordered].map((place) => [place.id, place])).values()].slice(0, Math.max(limit, pinned.length));
+    setItinerary(selected);
   }
   const shownPlaces = showAllPlaces ? filtered : filtered.slice(0, 6);
 
