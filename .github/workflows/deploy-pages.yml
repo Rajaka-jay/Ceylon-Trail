@@ -37,6 +37,8 @@ jobs:
 
       - name: Build frontend
         working-directory: serendib-frontend
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
         run: npm run build
 
       - name: Configure Pages
