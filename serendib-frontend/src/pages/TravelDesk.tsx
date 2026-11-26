@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeftRight,
   ArrowRight,
-  ArrowUpRight,
   CalendarDays,
   Check,
   Cloud,
@@ -10,7 +9,6 @@ import {
   CloudLightning,
   CloudRain,
   CloudSun,
-  ExternalLink,
   MapPin,
   Navigation,
   ShieldCheck,
@@ -74,13 +72,12 @@ const checklistItems = [
 ];
 
 const officialServices = [
-  { title: "Visa and arrival", description: "Review current entry information and follow the official application route.", href: "https://www.srilanka.travel/before-you-go", label: "Before you go" },
-  { title: "Stays, flights and park visits", description: "Open the official visitor services directory for booking links and availability.", href: "https://www.srilanka.travel/online-services", label: "Visitor services" },
-  { title: "Travel tips", description: "Read practical guidance about transport, local customs, health and money.", href: "https://www.srilanka.travel/travel-tips", label: "Travel tips" },
-  { title: "Tourist map", description: "Open the official map and explore the island’s regions and attractions.", href: "https://www.srilanka.travel/tourist-map", label: "Tourist map" },
-  { title: "Public holidays", description: "Check Poya days and public holidays before confirming opening times.", href: "https://www.srilanka.travel/public-holidays", label: "Holiday calendar" },
-  { title: "Travel notices", description: "Check official notices for current visitor updates and advisories.", href: "https://www.srilanka.travel/situation_update/", label: "Official notices" },
-  { title: "Events and festivals", description: "See the latest event listings and cultural dates from Sri Lanka Tourism.", href: "https://www.srilanka.travel/", label: "Browse events" },
+  { title: "Regional weather", description: "Check a three-day forecast for key towns around the island.", label: "Open forecast", target: "weather-title", to: undefined },
+  { title: "Currency converter", description: "Compare an indicative reference rate for common travel currencies.", label: "Convert currency", target: "currency-title", to: undefined },
+  { title: "Island distances", description: "Compare approximate straight-line distances between selected towns.", label: "Check distances", target: "distance-title", to: undefined },
+  { title: "Before you set off", description: "Keep a simple preparation checklist on this device.", label: "View checklist", target: "checklist-title", to: undefined },
+  { title: "Visitor assistance", description: "Keep important local assistance numbers close at hand.", label: "View numbers", target: "emergency-title", to: undefined },
+  { title: "Destination guide", description: "Browse island places, save favourites and start building a route.", label: "Explore destinations", target: "", to: "/explore" },
 ];
 
 function getWeatherLabel(code: number) {
@@ -159,7 +156,7 @@ function WeatherTool() {
         </label>
       </div>
       {loading && <p className="desk-status" role="status">Loading the latest forecast…</p>}
-      {!loading && error && <div className="desk-error" role="status">{error}<a href="https://www.srilanka.travel/weather-in-sri-lanka" target="_blank" rel="noreferrer">Open Sri Lanka Tourism weather <ExternalLink size={14} /></a></div>}
+      {!loading && error && <div className="desk-error" role="status">{error}<span>Try another town or reload the page.</span></div>}
       {!loading && weather && <>
         <div className="weather-now">
           <div className="weather-current-icon"><WeatherIcon code={weather.current.weather_code} size={35} /></div>
@@ -207,7 +204,7 @@ function CurrencyTool() {
       .catch((loadError: unknown) => {
         if (loadError instanceof DOMException && loadError.name === "AbortError") return;
         setRate(null);
-        setError("A reference rate is unavailable. Check the Central Bank of Sri Lanka for current rates.");
+        setError("A reference rate is unavailable right now. Try again later.");
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
@@ -239,7 +236,7 @@ function CurrencyTool() {
           ? <><small>{formatter.format(Number(amount || 0))} {base} is approximately</small><strong>{formatter.format(converted)} {quote}</strong><small>Reference rate date: {rateDate}</small></>
           : <span>{error || "Enter an amount to see the conversion."}</span>}
       </div>
-      <p className="desk-attribution">Indicative reference rates, not a bank, card or cash exchange quote. <a href="https://www.cbsl.gov.lk/en/rates-and-indicators/exchange-rates" target="_blank" rel="noreferrer">Check CBSL rates <ExternalLink size={12} /></a></p>
+      <p className="desk-attribution">Indicative reference rates only; your bank, card provider or cash exchange may use a different rate.</p>
     </section>
   );
 }
@@ -258,10 +255,6 @@ function DistanceTool() {
     return Math.round(6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   }, [origin, destination]);
 
-  const mapsUrl = "https://www.google.com/maps/dir/?api=1&origin="
-    + encodeURIComponent(from + ", Sri Lanka")
-    + "&destination=" + encodeURIComponent(to + ", Sri Lanka");
-
   return (
     <section className="desk-panel distance-panel" aria-labelledby="distance-title">
       <div className="desk-panel-heading"><div><p className="desk-kicker">BETWEEN TWO STOPS</p><h2 id="distance-title">Map a leg of your trip</h2></div><Navigation size={21} /></div>
@@ -270,8 +263,8 @@ function DistanceTool() {
         <label className="desk-field"><span>End</span><select value={to} onChange={(event) => setTo(event.target.value)}>{stops.map((stop) => <option key={stop.name}>{stop.name}</option>)}</select></label>
       </div>
       <div className="distance-result"><MapPin size={18} /><strong>{straightLineKm} km</strong><span>approximate straight-line distance</span></div>
-      <p className="desk-attribution">Road and rail routes are longer and may take very different times. Open a live map for route choices.</p>
-      <a className="desk-action-link" href={mapsUrl} target="_blank" rel="noreferrer">Open directions in Google Maps <ArrowUpRight size={15} /></a>
+      <p className="desk-attribution">Road and rail routes are longer and may take very different times. The route sketch includes a stop map inside Ceylon Trail.</p>
+      <Link className="desk-action-link" to="/?planner=1">Build a route in Ceylon Trail <ArrowRight size={15} /></Link>
     </section>
   );
 }
@@ -308,10 +301,13 @@ function TripChecklist() {
 function OfficialServices() {
   return (
     <section className="desk-official-section" aria-labelledby="official-services-title">
-      <div className="desk-section-intro"><p className="desk-kicker">USEFUL LINKS, FROM THE SOURCE</p><h2 id="official-services-title">Official travel services</h2><p>Visa rules, bookings and public notices can change. Continue to the official service to confirm current details.</p></div>
-      <div className="official-service-grid">{officialServices.map((service, index) => <a className="official-service-card tilt-card" href={service.href} target="_blank" rel="noreferrer" key={service.title}>
-        <span className="official-index">0{index + 1}</span><h3>{service.title}</h3><p>{service.description}</p><span className="official-open">{service.label}<ExternalLink size={14} /></span>
-      </a>)}</div>
+      <div className="desk-section-intro"><p className="desk-kicker">TOOLS BUILT INTO CEYLON TRAIL</p><h2 id="official-services-title">Plan from right here</h2><p>Open the island guide’s planning tools, or jump to the part of the Travel Desk you need.</p></div>
+      <div className="official-service-grid">{officialServices.map((service, index) => {
+        const content = <><span className="official-index">0{index + 1}</span><h3>{service.title}</h3><p>{service.description}</p><span className="official-open">{service.label}<ArrowRight size={14} /></span></>;
+        return service.to
+          ? <Link className="official-service-card tilt-card" to={service.to} key={service.title}>{content}</Link>
+          : <button type="button" className="official-service-card tilt-card" key={service.title} onClick={() => document.getElementById(service.target ?? "")?.scrollIntoView({ behavior: "smooth", block: "center" })}>{content}</button>;
+      })}</div>
     </section>
   );
 }
@@ -319,7 +315,7 @@ function OfficialServices() {
 function EmergencyContacts() {
   return (
     <section className="desk-emergency" aria-labelledby="emergency-title">
-      <div className="emergency-copy"><p className="desk-kicker">KEEP THE RIGHT NUMBERS CLOSE</p><h2 id="emergency-title">Visitor assistance</h2><p>For emergencies, contact the relevant local service. Coverage and response may differ by area.</p><a href="https://www.srilanka.travel/emergency-services" target="_blank" rel="noreferrer">See the official contact directory <ExternalLink size={14} /></a></div>
+      <div className="emergency-copy"><p className="desk-kicker">KEEP THE RIGHT NUMBERS CLOSE</p><h2 id="emergency-title">Visitor assistance</h2><p>For emergencies, contact the relevant local service. Coverage and response may differ by area.</p><span>Tap a number to call from your device.</span></div>
       <div className="emergency-number"><span>Tourism hotline</span><a href="tel:1912">1912</a><small>Visitor assistance</small></div>
       <div className="emergency-number"><span>Police emergency</span><a href="tel:119">119</a><small>Police response</small></div>
       <div className="emergency-number"><span>Ambulance service</span><a href="tel:1990">1990</a><small>Suwa Seriya</small></div>
@@ -333,7 +329,7 @@ export default function TravelDesk() {
       <Header />
       <main className="travel-desk-page page-enter">
         <section className="travel-desk-hero">
-          <div><p className="desk-kicker">THE ISLAND, WELL PREPARED</p><h1>Useful details for<br /><em>the way there.</em></h1><p>Weather, money, route notes and trusted links — gathered in one calm place before you set out.</p><a className="desk-hero-link" href="https://www.srilanka.travel/before-you-go" target="_blank" rel="noreferrer">Start with official arrival guidance <ArrowUpRight size={16} /></a><Link className="desk-planner-link" to="/?planner=1">Sketch my island route <ArrowRight size={16} /></Link></div>
+          <div><p className="desk-kicker">THE ISLAND, WELL PREPARED</p><h1>Useful details for<br /><em>the way there.</em></h1><p>Weather, money, route notes and useful planning tools — gathered in one calm place before you set out.</p><Link className="desk-hero-link" to="/?planner=1">Sketch your island route <ArrowRight size={16} /></Link></div>
           <div className="desk-hero-index"><span>CEYLON TRAIL</span><b>01</b><span>TRAVEL DESK</span></div>
         </section>
 
