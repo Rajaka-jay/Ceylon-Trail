@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { ArrowDown, ArrowRight, Bookmark, Check, ChevronDown, ChevronRight, Compass, Heart, MapPin, Menu, Mountain, Search, Sparkles, TrainFront, Waves, X } from "lucide-react";
+import { ArrowDown, ArrowRight, Bookmark, Check, ChevronRight, Compass, Heart, MapPin, Menu, Mountain, Search, Sparkles, TrainFront, Waves, X } from "lucide-react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import DestinationDetails from "./pages/DestinationDetails";
 import SavedPlaces from "./pages/SavedPlaces";
@@ -63,7 +63,7 @@ function HomePage() {
   const [travellers, setTravellers] = useState("Couple");
   const [selectedInterests, setSelectedInterests] = useState<string[]>(["Culture", "Nature"]);
   const [itinerary, setItinerary] = useState<Place[]>([]);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);\n  const [showAllPlaces, setShowAllPlaces] = useState(false);
 
   useEffect(() => {
     getDestinations().then((data) => { if (data.length) setDestinations(data); }).catch(() => undefined);
@@ -128,7 +128,7 @@ function HomePage() {
     }).slice(0, limit);
     setItinerary(selected);
   }
-  const shownPlaces = filtered.slice(0, 6);
+  const shownPlaces = showAllPlaces ? filtered : filtered.slice(0, 6);
 
   return (
     <div className="trail-app">
@@ -154,7 +154,7 @@ function HomePage() {
               <Search size={19} />
               <div className="search-field"><label htmlFor="hero-search">WHERE TO?</label><input id="hero-search" value={query} onChange={(event) => { setQuery(event.target.value); setSuggestionsOpen(true); }} onFocus={() => setSuggestionsOpen(true)} onBlur={() => window.setTimeout(() => setSuggestionsOpen(false), 140)} placeholder="Try Ella, Sigiriya, or the coast" autoComplete="off" /></div>
               <button type="submit">Find your place <ArrowRight size={17} /></button>
-              {suggestions.length > 0 && <div className="search-suggestions">{suggestions.map((place) => <button type="button" key={place.id} onMouseDown={(event) => event.preventDefault()} onClick={() => { setQuery(place.name); setSuggestionsOpen(false); setActivePlace(places.find((item) => item.name === place.name) ?? null); }}>{place.name}<small>{place.location}</small></button>)}</div>}
+              {suggestions.length > 0 && <div className="search-suggestions">{suggestions.map((place) => <button type="button" key={place.id} onMouseDown={(event) => event.preventDefault()} onClick={() => { setQuery(place.name); setSuggestionsOpen(false); const match = places.find((item) => item.name === place.name); setActivePlace(match ?? { ...place, tags: [], duration: "Half day", bestFor: place.category?.name ?? "Exploring", region: place.location }); }}>{place.name}<small>{place.location}</small></button>)}</div>}
             </form>
             <div className="hero-notes"><span><Check size={14} /> Made for curious travellers</span><span>Scroll to wander <ArrowDown size={13} /></span></div>
           </div>
@@ -171,7 +171,7 @@ function HomePage() {
 
         <section className="places-section" id="places">
           <div className="section-wrap">
-            <div className="section-heading-row places-title-row"><div><p className="section-overline">THE ISLAND, YOUR WAY</p><h2>Places that <em>stay with you.</em></h2></div><a className="quiet-link" href="/Ceylon-Trail/#/explore">Explore the full guide <ArrowRight size={16} /></a></div>
+            <div className="section-heading-row places-title-row"><div><p className="section-overline">THE ISLAND, YOUR WAY</p><h2>Places that <em>stay with you.</em></h2></div><button className="quiet-link" onClick={() => { setShowAllPlaces(true); document.getElementById("places")?.scrollIntoView({ behavior: "smooth" }); }}>Explore the full guide <ArrowRight size={16} /></button></div>
             <div className="place-filters"><button className={category === "All" ? "filter-pill active" : "filter-pill"} onClick={() => setCategory("All")}>Everything</button>{categories.map((item) => <button key={item.name} className={category === item.name ? "filter-pill active" : "filter-pill"} onClick={() => setCategory(item.name)}>{item.name}</button>)}</div>
             <div className="curated-grid">{shownPlaces.map((place, index) => {
               const known = places.find((item) => item.name.toLowerCase() === place.name.toLowerCase());
@@ -183,7 +183,7 @@ function HomePage() {
               </article>;
             })}</div>
             {shownPlaces.length === 0 && <div className="no-results"><Compass /><h3>No places found yet</h3><p>Try another search or choose a different island mood.</p><button onClick={() => { setQuery(""); setCategory("All"); }}>Clear filters</button></div>}
-            {filtered.length > 6 && <button className="load-more-button" onClick={() => navigate("/explore")}>See all {filtered.length} places <ArrowRight size={16} /></button>}
+            {filtered.length > 6 && !showAllPlaces && <button className="load-more-button" onClick={() => setShowAllPlaces(true)}>See all {filtered.length} places <ArrowRight size={16} /></button>}
           </div>
         </section>
 
@@ -205,6 +205,20 @@ function HomePage() {
   );
 }
 
+
+function SavedPage() {
+  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => readIds("serendib-favorites"));
+  const [remotePlaces, setRemotePlaces] = useState<Destination[]>([]);
+  useEffect(() => { getDestinations().then(setRemotePlaces).catch(() => undefined); }, []);
+  const savedPlaces = favoriteIds.map((id) => places.find((place) => place.id === id) ?? remotePlaces.find((place) => place.id === id)).filter((place): place is Destination => Boolean(place));
+  function remove(id: number) {
+    const next = favoriteIds.filter((item) => item !== id);
+    setFavoriteIds(next);
+    localStorage.setItem("serendib-favorites", JSON.stringify(next));
+  }
+  return <div className="trail-app"><header className="trail-header"><a href="/Ceylon-Trail/#/" className="trail-brand"><span className="brand-emblem">ct</span><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></a><a className="plan-top-button" href="/Ceylon-Trail/#/">Back to the island <ArrowRight size={15} /></a></header><main className="saved-page"><div className="section-wrap" style={{paddingTop:64,paddingBottom:90}}><p className="section-overline">YOUR TRAVEL LIST</p><h1 style={{font:"500 clamp(42px,7vw,70px) var(--serif)",color:"var(--trail-forest)"}}>Saved <em style={{color:"#b66a4c"}}>places.</em></h1><p style={{color:"#718078",fontSize:13}}>Keep the places you want to remember for your next island journey.</p>{savedPlaces.length === 0 ? <div className="no-results"><Bookmark /><h3>No saved places yet</h3><p>Tap the heart on a place to keep it here for later.</p><a className="dark-cta" href="/Ceylon-Trail/#/">Explore places <ArrowRight size={15} /></a></div> : <div className="curated-grid">{savedPlaces.map((place) => { const known=places.find((item)=>item.id===place.id); const image=place.imageUrl || "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"; return <article className="place-card" key={place.id}><img src={image} alt={place.name} style={{width:"100%",height:220,objectFit:"cover"}}/><div className="place-card-body"><div className="place-location"><MapPin size={13}/>{place.location}</div><h3>{place.name}</h3><p>{place.shortDescription}</p><button className="place-read" onClick={()=>remove(place.id)}><Heart size={15} fill="currentColor"/> Remove from saved</button>{known && <a className="place-read" href="/Ceylon-Trail/#/">Back to island guide <ArrowRight size={15}/></a>}</div></article>; })}</div>}</div></main></div>;
+}
+
 export default function App() {
-  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPlaces favoriteIds={readIds("serendib-favorites")} onToggleFavorite={(id) => { const current = readIds("serendib-favorites"); const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id]; localStorage.setItem("serendib-favorites", JSON.stringify(next)); window.dispatchEvent(new Event("storage")); }} />} /><Route path="/explore" element={<Explore />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetails favoriteIds={readIds("serendib-favorites")} onToggleFavorite={() => undefined} />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /></Routes>;
+  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetails favoriteIds={readIds("serendib-favorites")} onToggleFavorite={() => undefined} />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /></Routes>;
 }
