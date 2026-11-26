@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "serendib-frontend/**"
+      - "serendib-backend/**"
       - ".github/workflows/build-check.yml"
 
 permissions:
@@ -30,4 +31,29 @@ jobs:
 
       - name: Build frontend
         working-directory: serendib-frontend
+        run: npm run build
+
+  backend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: serendib-backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: serendib-backend
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: serendib-backend
+        run: npx prisma generate
+
+      - name: Build backend
+        working-directory: serendib-backend
         run: npm run build
