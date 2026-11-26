@@ -1,4 +1,5 @@
 import { adminHeaders } from "./admin";
+import { API_URL } from "./config";
 
 export type DestinationSection = {
   id: number;
@@ -58,8 +59,6 @@ type CategoriesResponse = {
   data: Category[];
   message?: string;
 };
-
-const API_URL = "/api";
 
 async function getErrorMessage(
   response: Response,

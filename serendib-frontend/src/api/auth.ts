@@ -1,3 +1,5 @@
+import { API_URL } from "./config";
+
 type LoginResponse = {
   success: boolean;
   token?: string;
@@ -30,7 +32,7 @@ export async function loginAdmin(
   email: string,
   password: string,
 ) {
-  const response = await fetch("/api/auth/login", {
+  const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
