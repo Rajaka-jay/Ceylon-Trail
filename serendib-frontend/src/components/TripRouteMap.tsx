@@ -56,7 +56,7 @@ export default function TripRouteMap({ itinerary }: Props) {
             <rect width="800" height="570" rx="18" fill="url(#map-grid)" />
             <text x="36" y="46" className="trip-map-sea-label">INDIAN OCEAN</text>
             <text x="590" y="525" className="trip-map-sea-label">BAY OF BENGAL</text>
-            <path className="trip-map-island" d="M 184 65 C 232 52 310 57 365 76 C 421 89 485 96 528 127 C 576 158 608 204 621 256 C 635 309 650 359 638 404 C 628 449 594 475 572 500 C 548 530 516 552 487 546 C 458 540 441 513 416 492 C 387 472 359 462 331 441 C 300 419 281 394 253 374 C 226 353 206 327 191 300 C 174 270 151 239 139 208 C 128 178 132 149 145 121 C 155 96 164 75 184 65 Z" />
+            <path className="trip-map-island" d="M 193 58 C 248 48 295 55 347 73 C 404 86 463 95 511 122 C 572 153 617 202 631 250 C 653 302 675 355 657 407 C 640 446 589 473 557 495 C 520 522 450 543 347 548 C 303 548 276 527 253 510 C 219 489 179 464 147 436 C 116 407 100 371 98 332 C 91 293 103 257 125 222 C 145 189 130 164 149 132 C 162 98 174 73 193 58 Z" />
             {points.length > 1 && <polyline className="trip-map-route-line" points={polyline} />}
             {points.map((point, index) => (
               <g key={itinerary[index].id} className={index === selectedIndex ? "trip-map-marker is-selected" : "trip-map-marker"} role="button" tabIndex={0} aria-label={`Select stop ${index + 1}: ${itinerary[index].name}`} onClick={() => selectStop(index)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectStop(index); } }}>
