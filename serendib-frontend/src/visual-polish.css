@@ -174,3 +174,62 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
  *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
  .reveal-on-scroll { opacity:1 !important; transform:none !important; }
 }
+
+
+/* Gentle pointer-driven depth for image and content cards. */
+.tilt-card {
+  position: relative;
+  transform: perspective(1100px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(0);
+  transform-style: preserve-3d;
+  transition: transform 260ms cubic-bezier(.2,.7,.25,1), box-shadow 260ms ease;
+  will-change: transform;
+}
+.tilt-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(255,255,255,.16), transparent 42%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+.tilt-card.is-tilting::after { opacity: 1; }
+.place-card.tilt-card:hover,
+.destination-card.tilt-card:hover,
+.guide-card.tilt-card:hover,
+.experience-card.tilt-card:hover,
+.journey-card.tilt-card:hover {
+  transform: perspective(1100px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(-4px);
+  box-shadow: 0 22px 48px rgba(21, 48, 40, .13);
+}
+.tilt-card .card-image-wrap,
+.tilt-card .journey-image,
+.tilt-card .experience-photo,
+.tilt-card .guide-card-image {
+  transform: translateZ(12px);
+  transform-style: preserve-3d;
+}
+.tilt-card img { backface-visibility: hidden; }
+.tilt-card button,
+.tilt-card a { transition: transform 180ms ease, box-shadow 180ms ease; }
+.tilt-card button:hover,
+.tilt-card a:hover { transform: translateY(-1px) translateZ(4px); }
+.tilt-card button:active,
+.tilt-card a:active { transform: translateY(1px) translateZ(0); }
+@media (hover: none), (pointer: coarse) {
+  .tilt-card { transform: none; will-change: auto; }
+  .tilt-card::after { display: none; }
+  .tilt-card .card-image-wrap,
+  .tilt-card .journey-image,
+  .tilt-card .experience-photo,
+  .tilt-card .guide-card-image { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tilt-card,
+  .tilt-card::after,
+  .tilt-card button,
+  .tilt-card a { transition: none !important; transform: none !important; }
+  .tilt-card::after { display: none; }
+}
