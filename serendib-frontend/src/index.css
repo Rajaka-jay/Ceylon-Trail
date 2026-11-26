@@ -1182,3 +1182,6 @@ html[data-theme="dark"] .theme-toggle { color: #c4b5fd; }
 @media(prefers-reduced-motion:reduce) {
   .trail-app *, .trail-app *::before,.trail-app *::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; }
 }
+
+.trail-app .quiet-link { padding:0; border:0; background:transparent; cursor:pointer; font:10px var(--mono); }
+.trail-app .quiet-link:hover { background:transparent; color:#b66a4c; }
