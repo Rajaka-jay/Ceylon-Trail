@@ -7,14 +7,17 @@ type GuideCardProps = {
   guide: Guide;
 };
 
+const guideFallbackImage =
+  "https://images.unsplash.com/photo-1606293926075-69a00dbfde81?auto=format&fit=crop&w=1200&q=85";
+
 export default function GuideCard({
   guide,
 }: GuideCardProps ) {
   return (
-    <article className="guide-card">
+    <article className="guide-card tilt-card">
       <Link to={`/guides/${guide.slug}`}>
         <div className="guide-card-image">
-          <img src={guide.image} alt={guide.title} />
+          <img src={guide.image || guideFallbackImage} alt={guide.title} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = guideFallbackImage; }} />
         </div>
       </Link>
 
