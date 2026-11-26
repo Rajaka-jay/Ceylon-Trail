@@ -39,6 +39,7 @@ function readPlan() {
 }
 
 export default function Experiences() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [planned, setPlanned] = useState<number[]>(readPlan);
