@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { Binoculars, Compass, Landmark, MapPin, Minus, Mountain, Plus, Trees, Umbrella } from "lucide-react";
+import { Compass, ExternalLink, MapPin, Minus, Navigation, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { Place } from "../data/travelPlaces";
 
-type Props = { itinerary: Place[] };
+type Props = { itinerary: Place[]; showDirections?: boolean; fullPage?: boolean; eyebrow?: string; title?: string };
 type Point = { x: number; y: number };
 type GeoPoint = { longitude: number; latitude: number };
 type MapView = GeoPoint & { zoom: number };
@@ -81,12 +82,33 @@ function getPlaceKind(place: Place): PlaceKind {
   return "nature";
 }
 
-function PlaceIcon({ kind, size = 16 }: { kind: PlaceKind; size?: number }) {
-  if (kind === "culture") return <Landmark size={size} strokeWidth={2.2} />;
-  if (kind === "beach") return <Umbrella size={size} strokeWidth={2.2} />;
-  if (kind === "wildlife") return <Binoculars size={size} strokeWidth={2.2} />;
-  if (kind === "adventure") return <Mountain size={size} strokeWidth={2.2} />;
-  return <Trees size={size} strokeWidth={2.2} />;
+const emojiForKind: Record<PlaceKind, string> = {
+  culture: "🏛️",
+  beach: "🏖️",
+  nature: "🌿",
+  wildlife: "🐘",
+  adventure: "🥾",
+};
+
+function PlaceEmoji({ kind }: { kind: PlaceKind }) {
+  const label: Record<PlaceKind, string> = {
+    culture: "Culture and heritage",
+    beach: "Beach and coast",
+    nature: "Nature",
+    wildlife: "Wildlife",
+    adventure: "Adventure",
+  };
+  return <span className="trip-place-emoji" role="img" aria-label={label[kind]}>{emojiForKind[kind]}</span>;
+}
+
+function googleDirectionsFor(place: Place, index: number) {
+  const point = coordinatesFor(place, index);
+  const parameters = new URLSearchParams({
+    api: "1",
+    destination: `${point.latitude},${point.longitude}`,
+    travelmode: "driving",
+  });
+  return `https://www.google.com/maps/dir/?${parameters.toString()}`;
 }
 
 function tilesFor(view: MapView, width: number, height: number): Tile[] {
@@ -114,7 +136,7 @@ function tilesFor(view: MapView, width: number, height: number): Tile[] {
   return tiles;
 }
 
-export default function TripRouteMap({ itinerary }: Props) {
+export default function TripRouteMap({ itinerary, showDirections = false, fullPage = false, eyebrow = "YOUR ROUTE, ON THE ISLAND", title = "Places on your map" }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ pointerId: number; x: number; y: number; centerX: number; centerY: number } | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -188,9 +210,10 @@ export default function TripRouteMap({ itinerary }: Props) {
   }
 
   return (
-    <section className="trip-route-map" aria-labelledby="trip-map-title">
+    <section className={fullPage ? "trip-route-map trip-route-map--full-page" : "trip-route-map"} aria-labelledby="trip-map-title">
       <div className="trip-map-heading">
-        <div><p className="section-overline">YOUR ROUTE, ON THE ISLAND</p><h4 id="trip-map-title">Places on your map</h4></div>
+        <div><p className="section-overline">{eyebrow}</p><h4 id="trip-map-title">{title}</h4></div>
+        {!fullPage && <Link className="trip-map-full-page-link" to="/locations">Open full locations map</Link>}
         <span className="trip-map-count"><MapPin size={15} /> {itinerary.length} {itinerary.length === 1 ? "place" : "places"}</span>
       </div>
       <div className="trip-map-layout">
@@ -221,7 +244,7 @@ export default function TripRouteMap({ itinerary }: Props) {
               aria-label={`Show ${place.name} on the itinerary`}
               aria-pressed={index === activeIndex}
               title={place.name}
-            ><PlaceIcon kind={kind} size={17} /><span className="sr-only">{place.name}</span></button>;
+            ><PlaceEmoji kind={kind} /><span className="sr-only">{place.name}</span></button>;
           })}
           <div className="trip-map-controls" aria-label="Map controls">
             <button className="trip-map-control" type="button" onClick={() => zoomBy(1)} aria-label="Zoom in"><Plus size={17} /></button>
@@ -234,11 +257,14 @@ export default function TripRouteMap({ itinerary }: Props) {
         </div>
         <div className="trip-map-stops" aria-label="Places in your planned route">
           <div className="trip-map-stop-list">{places.map(({ place, index, kind }) => (
-            <button type="button" key={place.id} className={index === activeIndex ? "trip-map-stop is-selected" : "trip-map-stop"} onClick={() => selectStop(index)} aria-pressed={index === activeIndex}>
-              <span className={`trip-map-stop-icon trip-map-pin--${kind}`}><PlaceIcon kind={kind} size={17} /></span><span><b>{place.name}</b><small>{place.region}</small></span><MapPin size={15} />
-            </button>
+            <div className="trip-map-stop-row" key={place.id}>
+              <button type="button" className={index === activeIndex ? "trip-map-stop is-selected" : "trip-map-stop"} onClick={() => selectStop(index)} aria-pressed={index === activeIndex}>
+                <span className={`trip-map-stop-icon trip-map-pin--${kind}`}><PlaceEmoji kind={kind} /></span><span><b>{place.name}</b><small>{place.region}</small></span><MapPin size={15} />
+              </button>
+              {showDirections && <a className="trip-map-row-directions" href={googleDirectionsFor(place,index)} target="_blank" rel="noopener noreferrer" aria-label={`Get Google Maps driving directions to ${place.name}`} title={`Directions to ${place.name}`}><Navigation size={16} /></a>}
+            </div>
           ))}</div>
-          {selected && <div className="trip-map-selected"><p>SELECTED PLACE · {String(activeIndex + 1).padStart(2, "0")}</p><h5>{selected.place.name}</h5><span>{selected.place.location}</span><small>{selected.place.shortDescription}</small></div>}
+          {selected && <div className="trip-map-selected"><p>SELECTED PLACE · {String(activeIndex + 1).padStart(2, "0")}</p><h5>{selected.place.name}</h5><span>{selected.place.location}</span><small>{selected.place.shortDescription}</small>{showDirections && <a className="trip-map-directions" href={googleDirectionsFor(selected.place,activeIndex)} target="_blank" rel="noopener noreferrer"><Navigation size={16} /> Get Google directions <ExternalLink size={13} /></a>}</div>}
           <p className="trip-map-note">Drag to explore the street map. Choose any marker or destination to see its details.</p>
         </div>
       </div>
