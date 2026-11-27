@@ -83,7 +83,7 @@ export default function Experiences() {
             <p className="eyebrow light">SEE IT YOUR WAY · SRI LANKA</p>
             <h1>Find the moments<br /><em>that make the trip.</em></h1>
             <p>From a train window in the hills to a late walk along the fort walls, choose experiences that fit your kind of journey.</p>
-            <a className="outline-light-button" href="#experience-list">Explore experiences <ArrowRight size={16} /></a>
+            <button type="button" className="outline-light-button" onClick={() => document.getElementById("experience-list")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Explore experiences <ArrowRight size={16} /></button>
           </div>
         </section>
 
