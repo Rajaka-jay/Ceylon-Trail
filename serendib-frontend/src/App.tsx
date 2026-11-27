@@ -7,6 +7,7 @@ import GuideDetails from "./pages/GuideDetails";
 import AdminDestinations from "./pages/AdminDestinations";
 import AdminLogin from "./pages/AdminLogin";
 import Explore from "./pages/Explore";
+import LocationsPage from "./pages/LocationsPage";
 import Experiences from "./pages/Experiences";
 import TravelDesk from "./pages/TravelDesk";
 import UserAccess from "./pages/UserAccess";
@@ -171,7 +172,7 @@ function HomePage() {
         <a href="#top" className="trail-brand" aria-label="Ceylon Trail home"><BrandMark className="brand-emblem" /><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></a>
         <button className="mobile-menu-trigger" type="button" aria-label="Open menu" onClick={() => setMobileOpen(!mobileOpen)}>{mobileOpen ? <X /> : <Menu />}</button>
         <nav className={mobileOpen ? "trail-nav is-open" : "trail-nav"} aria-label="Main navigation">
-          <a href="#discover" onClick={() => setMobileOpen(false)}>Places</a><a href="#journeys" onClick={() => setMobileOpen(false)}>Journeys</a><Link to="/experiences" onClick={() => setMobileOpen(false)}>Experiences</Link><Link to="/travel-desk" onClick={() => setMobileOpen(false)}>Travel desk</Link><a href="#planner" onClick={() => setMobileOpen(false)}>Trip planner</a><a href="#field-notes" onClick={() => setMobileOpen(false)}>Field notes</a>
+          <a href="#discover" onClick={() => setMobileOpen(false)}>Places</a><Link to="/locations" onClick={() => setMobileOpen(false)}>Locations</Link><a href="#journeys" onClick={() => setMobileOpen(false)}>Journeys</a><Link to="/experiences" onClick={() => setMobileOpen(false)}>Experiences</Link><Link to="/travel-desk" onClick={() => setMobileOpen(false)}>Travel desk</Link><a href="#planner" onClick={() => setMobileOpen(false)}>Trip planner</a><a href="#field-notes" onClick={() => setMobileOpen(false)}>Field notes</a>
         </nav>
         <div className="trail-header-actions"><UserAccountLink /><button className="saved-shortcut" onClick={() => navigate("/saved")}><Bookmark size={15} /> Saved <span>{favorites.length}</span></button><button className="plan-top-button" onClick={() => { setShowPlanner(true); setMobileOpen(false); }}>Plan my trip <ArrowRight size={15} /></button></div>
       </header>
@@ -324,5 +325,5 @@ export default function App() {
     };
   }, []);
 
-  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/experiences" element={<Experiences />} /><Route path="/travel-desk" element={<TravelDesk />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetailsRoute />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /><Route path="/login" element={<UserAccess />} /><Route path="/register" element={<UserAccess />} /><Route path="/account" element={<UserAccess />} /></Routes>;
+  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/locations" element={<LocationsPage />} /><Route path="/experiences" element={<Experiences />} /><Route path="/travel-desk" element={<TravelDesk />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetailsRoute />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /><Route path="/login" element={<UserAccess />} /><Route path="/register" element={<UserAccess />} /><Route path="/account" element={<UserAccess />} /></Routes>;
 }

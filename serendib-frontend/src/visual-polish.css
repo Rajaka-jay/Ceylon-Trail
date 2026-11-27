@@ -574,3 +574,82 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .trip-map-loading span { animation:none; }
   .trip-map-pin,.trip-map-control { transition:none; }
 }
+
+
+/* Full-page destination map and category directions */
+.trip-place-emoji { display:inline-block; font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; font-size:18px; line-height:1; }
+.trip-map-pin .trip-place-emoji { font-size:17px; }
+.trip-map-stop-row { display:grid; grid-template-columns:minmax(0,1fr) 38px; align-items:stretch; gap:6px; }
+.trip-map-stop-row .trip-map-stop { min-width:0; }
+.trip-map-row-directions { display:grid; place-items:center; border:1px solid var(--line); color:var(--terracotta); background:var(--paper); transition:color .18s,background .18s,border-color .18s; }
+.trip-map-row-directions:hover { border-color:var(--green); color:white; background:var(--green); }
+.trip-map-row-directions:focus-visible,.trip-map-directions:focus-visible,.trip-map-full-page-link:focus-visible { outline:2px solid var(--terracotta); outline-offset:3px; }
+.trip-map-directions { width:max-content; max-width:100%; display:inline-flex; align-items:center; gap:9px; margin-top:13px; padding:11px 14px; color:white; background:var(--green); font-size:13px; transition:background .18s,transform .18s; }
+.trip-map-directions:hover { background:var(--terracotta); transform:translateY(-1px); }
+.trip-map-full-page-link { align-self:center; color:var(--terracotta); font-size:12px; text-decoration:underline; text-underline-offset:3px; }
+.trip-map-full-page-link:hover { color:var(--green); }
+
+.locations-page { min-height:100vh; background:var(--paper); }
+.locations-main { width:min(1440px,92%); margin:0 auto; padding-bottom:76px; }
+.locations-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:28px; padding:66px 0 38px; }
+.locations-hero-copy { max-width:780px; }
+.locations-hero .desk-kicker { margin-bottom:14px; }
+.locations-hero h1 { margin:0; color:var(--ink); font:500 clamp(46px,7vw,82px)/.98 var(--serif); letter-spacing:-.055em; }
+.locations-hero h1 em { color:var(--terracotta); }
+.locations-hero-copy>p:last-child { max-width:620px; margin:17px 0 0; color:var(--muted); font-size:16px; line-height:1.65; }
+.locations-plan-link { display:inline-flex; flex:0 0 auto; align-items:center; gap:9px; padding:13px 17px; color:white; background:var(--green); font-size:13px; }
+.locations-plan-link:hover { background:var(--terracotta); }
+.locations-browser { padding:22px; border:1px solid var(--line); background:var(--surface); }
+.locations-toolbar { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.locations-search { display:flex; align-items:center; gap:10px; width:min(460px,100%); min-height:46px; padding:0 13px; border:1px solid var(--line); color:var(--muted); background:var(--paper); }
+.locations-search input { width:100%; min-width:0; border:0; outline:0; color:var(--ink); background:transparent; font:14px var(--sans); }
+.locations-search input::placeholder { color:var(--muted); opacity:.8; }
+.locations-search button { display:grid; place-items:center; padding:5px; border:0; color:var(--muted); background:transparent; cursor:pointer; }
+.locations-result-count { margin:0; color:var(--muted); font:12px var(--mono); }
+.locations-result-count b { color:var(--green); }
+.locations-filters { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 20px; }
+.locations-filter { min-height:38px; padding:0 13px; border:1px solid var(--line); color:var(--muted); background:var(--paper); font-size:12px; cursor:pointer; transition:color .18s,background .18s,border-color .18s; }
+.locations-filter:hover,.locations-filter.is-active { border-color:var(--green); color:white; background:var(--green); }
+.locations-filter:focus-visible,.locations-search button:focus-visible { outline:2px solid var(--terracotta); outline-offset:2px; }
+.locations-map-wrap .trip-route-map { margin:0; padding:clamp(18px,2.5vw,32px); background:var(--paper); }
+.locations-map-wrap .trip-map-layout { grid-template-columns:minmax(0,1.45fr) minmax(340px,.72fr); gap:18px; }
+.locations-map-wrap .trip-map-canvas { height:min(74vh,760px); min-height:640px; }
+.locations-map-wrap .trip-map-stop-list { max-height:440px; }
+.locations-map-wrap .trip-map-heading h4 { font-size:clamp(25px,3vw,38px); }
+.locations-empty { display:grid; justify-items:center; gap:9px; padding:70px 20px; border:1px dashed var(--line); color:var(--muted); background:var(--paper); text-align:center; }
+.locations-empty>svg { color:var(--terracotta); }
+.locations-empty h2 { margin:0; color:var(--green); font:500 28px var(--serif); }
+.locations-empty p { margin:0 0 10px; font-size:14px; }
+.locations-empty button { padding:10px 15px; border:0; color:white; background:var(--green); cursor:pointer; }
+.locations-note { padding-top:20px; color:var(--muted); font-size:12px; line-height:1.6; }
+.locations-note p { margin:0; }
+@media(max-width:900px) {
+  .locations-main { width:94%; }
+  .locations-map-wrap .trip-map-layout { grid-template-columns:minmax(0,1fr) minmax(280px,.72fr); }
+}
+@media(max-width:760px) {
+  .locations-hero { align-items:flex-start; flex-direction:column; padding:45px 0 28px; }
+  .locations-toolbar { align-items:flex-start; flex-direction:column; gap:10px; }
+  .locations-search { width:100%; }
+  .locations-browser { padding:14px; }
+  .locations-map-wrap .trip-map-layout { grid-template-columns:1fr; }
+  .locations-map-wrap .trip-map-canvas { min-height:500px; height:64vh; max-height:640px; }
+  .locations-map-wrap .trip-map-stop-list { max-height:340px; }
+}
+@media(max-width:580px) {
+  .locations-main { width:92%; padding-bottom:54px; }
+  .locations-hero { padding-top:35px; }
+  .locations-hero h1 { font-size:clamp(42px,12vw,60px); }
+  .locations-hero-copy>p:last-child { font-size:14px; }
+  .locations-plan-link { padding:12px 14px; font-size:12px; }
+  .locations-filters { flex-wrap:nowrap; overflow-x:auto; padding-bottom:6px; }
+  .locations-filter { flex:none; }
+  .locations-map-wrap .trip-route-map { padding:13px; }
+  .locations-map-wrap .trip-map-canvas { min-height:420px; height:58vh; max-height:540px; }
+  .locations-map-wrap .trip-map-stop-list { max-height:350px; }
+  .trip-map-stop-row { grid-template-columns:minmax(0,1fr) 36px; }
+}
+
+
+/* Keep the map's SVG zoom and reset controls visible above the tile layer. */
+.trip-map-canvas .trip-map-controls svg { display:block; }
