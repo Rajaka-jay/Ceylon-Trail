@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginAdmin } from "../api/auth";
+import { API_CONFIGURED, API_CONFIGURATION_MESSAGE } from "../api/config";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(""); setLoading(true);
-    try { await loginAdmin(email,password); navigate("/admin/destinations"); }
+    try { await loginAdmin(email,password); navigate("/admin/dashboard"); }
     catch (loginError) { setError(loginError instanceof Error ? loginError.message : "Login failed"); }
     finally { setLoading(false); }
   }
@@ -30,8 +31,9 @@ export default function AdminLogin() {
         <form className="admin-login-form" onSubmit={handleSubmit} aria-busy={loading}>
           <label htmlFor="admin-email">Email address</label><input id="admin-email" type="email" value={email} onChange={(event)=>setEmail(event.target.value)} autoComplete="username" disabled={loading} required />
           <label htmlFor="admin-password">Password</label><input id="admin-password" type="password" value={password} onChange={(event)=>setPassword(event.target.value)} autoComplete="current-password" disabled={loading} required />
+          {!API_CONFIGURED && <p className="admin-login-error" role="status">{API_CONFIGURATION_MESSAGE}</p>}
           {error && <p className="admin-login-error" role="alert">{error}</p>}
-          <button className="admin-login-submit" type="submit" disabled={loading}><Compass size={16} />{loading ? "Signing in…" : "Enter the studio"}</button>
+          <button className="admin-login-submit" type="submit" disabled={loading || !API_CONFIGURED}><Compass size={16} />{loading ? "Signing in…" : "Enter the studio"}</button>
         </form><p className="admin-login-note">This area is for authorised site editors.</p>
       </div>
     </section>

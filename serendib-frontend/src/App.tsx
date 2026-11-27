@@ -5,6 +5,7 @@ import DestinationDetails from "./pages/DestinationDetails";
 import Guides from "./pages/Guides";
 import GuideDetails from "./pages/GuideDetails";
 import AdminDestinations from "./pages/AdminDestinations";
+import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import Explore from "./pages/Explore";
 import LocationsPage from "./pages/LocationsPage";
@@ -346,5 +347,5 @@ export default function App() {
     };
   }, []);
 
-  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/locations" element={<LocationsPage />} /><Route path="/experiences" element={<Experiences />} /><Route path="/travel-desk" element={<TravelDesk />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetailsRoute />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /><Route path="/login" element={<UserAccess />} /><Route path="/register" element={<UserAccess />} /><Route path="/account" element={<UserAccess />} /><Route path="*" element={<LegacySectionRedirect />} /></Routes>;
+  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/locations" element={<LocationsPage />} /><Route path="/experiences" element={<Experiences />} /><Route path="/travel-desk" element={<TravelDesk />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetailsRoute />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} /><Route path="/login" element={<UserAccess />} /><Route path="/register" element={<UserAccess />} /><Route path="/account" element={<UserAccess />} /><Route path="*" element={<LegacySectionRedirect />} /></Routes>;
 }

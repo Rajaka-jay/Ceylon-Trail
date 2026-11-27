@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   createDestination,
@@ -193,6 +193,7 @@ export default function AdminDestinations() {
   return (
     <main className="admin-page">
       <header className="admin-page-header">
+        <div className="admin-header-actions"><Link to="/admin/dashboard">Dashboard</Link>
         <p className="eyebrow">SERENDIB STUDIO</p>
         <h1>Manage destinations</h1>
         <p>
@@ -205,7 +206,7 @@ export default function AdminDestinations() {
           onClick={handleLogout}
         >
           Log out
-        </button>
+        </button></div>
       </header>
 
       {error && (

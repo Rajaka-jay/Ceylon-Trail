@@ -4,6 +4,7 @@ import { HashRouter } from "react-router-dom";
 import "./index.css";
 import "./visual-polish.css";
 import "./user-access.css";
+import "./admin-dashboard.css";
 import App from "./App";
 
 createRoot(document.getElementById("root")!).render(
