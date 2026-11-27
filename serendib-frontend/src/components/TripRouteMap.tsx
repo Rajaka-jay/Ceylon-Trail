@@ -1,82 +1,245 @@
-import { useMemo, useState } from "react";
-import { MapPin, Route } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { Binoculars, Compass, Landmark, MapPin, Minus, Mountain, Plus, Trees, Umbrella } from "lucide-react";
 import type { Place } from "../data/travelPlaces";
 
 type Props = { itinerary: Place[] };
 type Point = { x: number; y: number };
+type GeoPoint = { longitude: number; latitude: number };
+type MapView = GeoPoint & { zoom: number };
+type Tile = { key: string; src: string; left: number; top: number };
+type PlaceKind = "culture" | "beach" | "nature" | "wildlife" | "adventure";
 
-const knownCoordinates: Record<string, [number, number]> = {
-  sigiriya: [80.7603, 7.957], ella: [81.0466, 6.8667], "galle fort": [80.221, 6.0535],
-  "yala national park": [81.52, 6.37], yala: [81.52, 6.37], mirissa: [80.459, 5.948],
-  anuradhapura: [80.4037, 8.3114], kandy: [80.6337, 7.2906], trincomalee: [81.2152, 8.5874],
-  "horton plains": [80.8, 6.8], polonnaruwa: [81.0, 7.9403], "arugam bay": [81.84, 6.84],
-  minneriya: [80.9, 8.03], colombo: [79.8612, 6.9271], nuwara: [80.7891, 6.9497],
-  jaffna: [80.0074, 9.6615], batticaloa: [81.6924, 7.7102], pasikudah: [81.566, 7.923],
-  "negombo": [79.8358, 7.2083], "wilpattu": [80.0, 8.45], "adams peak": [80.4994, 6.8096],
-};
-const regionCenters: Record<string, [number, number]> = {
-  "Cultural Triangle": [80.75, 8.05], "Hill Country": [80.78, 7.1], "South Coast": [80.58, 6.05],
-  "East Coast": [81.65, 7.65], Southeast: [81.45, 6.55], "West Coast": [79.9, 7.25],
+const TILE_SIZE = 256;
+const TILE_URL = "https://tile.openstreetmap.org";
+const initialView: MapView = { longitude: 80.72, latitude: 7.82, zoom: 7 };
+
+const knownCoordinates: Record<string, GeoPoint> = {
+  sigiriya: { longitude: 80.7603, latitude: 7.957 },
+  ella: { longitude: 81.0466, latitude: 6.8667 },
+  "galle fort": { longitude: 80.221, latitude: 6.0535 },
+  "yala national park": { longitude: 81.52, latitude: 6.37 },
+  yala: { longitude: 81.52, latitude: 6.37 },
+  mirissa: { longitude: 80.459, latitude: 5.948 },
+  anuradhapura: { longitude: 80.4037, latitude: 8.3114 },
+  kandy: { longitude: 80.6337, latitude: 7.2906 },
+  trincomalee: { longitude: 81.2152, latitude: 8.5874 },
+  "horton plains": { longitude: 80.8, latitude: 6.8 },
+  polonnaruwa: { longitude: 81.0, latitude: 7.9403 },
+  "arugam bay": { longitude: 81.84, latitude: 6.84 },
+  minneriya: { longitude: 80.9, latitude: 8.03 },
+  colombo: { longitude: 79.8612, latitude: 6.9271 },
+  nuwara: { longitude: 80.7891, latitude: 6.9497 },
+  jaffna: { longitude: 80.0074, latitude: 9.6615 },
+  batticaloa: { longitude: 81.6924, latitude: 7.7102 },
+  pasikudah: { longitude: 81.566, latitude: 7.923 },
+  negombo: { longitude: 79.8358, latitude: 7.2083 },
+  wilpattu: { longitude: 80.0, latitude: 8.45 },
+  "adams peak": { longitude: 80.4994, latitude: 6.8096 },
 };
 
-function coordinatesFor(place: Place, index: number): Point {
+const regionCenters: Record<string, GeoPoint> = {
+  "Cultural Triangle": { longitude: 80.75, latitude: 8.05 },
+  "Hill Country": { longitude: 80.78, latitude: 7.1 },
+  "South Coast": { longitude: 80.58, latitude: 6.05 },
+  "East Coast": { longitude: 81.65, latitude: 7.65 },
+  Southeast: { longitude: 81.45, latitude: 6.55 },
+  "West Coast": { longitude: 79.9, latitude: 7.25 },
+};
+
+function coordinatesFor(place: Place, index: number): GeoPoint {
   const key = place.name.toLowerCase();
   const exact = knownCoordinates[key] ?? Object.entries(knownCoordinates).find(([name]) => key.includes(name))?.[1];
-  const region = regionCenters[place.region] ?? regionCenters["Hill Country"];
-  const [longitude, latitude] = exact ?? [region[0] + ((index % 3) - 1) * 0.08, region[1] + ((index % 4) - 1.5) * 0.07];
-  return { x: 82 + (longitude - 79.55) * 255, y: 48 + (9.92 - latitude) * 122 };
+  const region = regionCenters[place.region] ?? initialView;
+  return exact ?? {
+    longitude: region.longitude + ((index % 3) - 1) * 0.08,
+    latitude: region.latitude + ((index % 4) - 1.5) * 0.07,
+  };
+}
+
+function toWorld(point: GeoPoint, zoom: number): Point {
+  const scale = TILE_SIZE * 2 ** zoom;
+  const latitude = Math.max(-85.0511, Math.min(85.0511, point.latitude)) * Math.PI / 180;
+  return {
+    x: ((point.longitude + 180) / 360) * scale,
+    y: ((1 - Math.log(Math.tan(latitude) + 1 / Math.cos(latitude)) / Math.PI) / 2) * scale,
+  };
+}
+
+function fromWorld(point: Point, zoom: number): GeoPoint {
+  const scale = TILE_SIZE * 2 ** zoom;
+  const longitude = point.x / scale * 360 - 180;
+  const n = Math.PI - 2 * Math.PI * point.y / scale;
+  return { longitude, latitude: 180 / Math.PI * Math.atan(Math.sinh(n)) };
+}
+
+function getPlaceKind(place: Place): PlaceKind {
+  const details = [place.category?.name ?? "", ...place.tags].join(" ").toLowerCase();
+  if (/wildlife|safari|animal|bird/.test(details)) return "wildlife";
+  if (/beach|coast|surf|diving|sea/.test(details)) return "beach";
+  if (/culture|heritage|history|temple/.test(details)) return "culture";
+  if (/adventure|hiking|trek|climb/.test(details)) return "adventure";
+  return "nature";
+}
+
+function PlaceIcon({ kind, size = 16 }: { kind: PlaceKind; size?: number }) {
+  if (kind === "culture") return <Landmark size={size} strokeWidth={2.2} />;
+  if (kind === "beach") return <Umbrella size={size} strokeWidth={2.2} />;
+  if (kind === "wildlife") return <Binoculars size={size} strokeWidth={2.2} />;
+  if (kind === "adventure") return <Mountain size={size} strokeWidth={2.2} />;
+  return <Trees size={size} strokeWidth={2.2} />;
+}
+
+function tilesFor(view: MapView, width: number, height: number): Tile[] {
+  if (!width || !height) return [];
+  const center = toWorld(view, view.zoom);
+  const firstX = Math.floor((center.x - width / 2) / TILE_SIZE);
+  const lastX = Math.floor((center.x + width / 2) / TILE_SIZE);
+  const firstY = Math.floor((center.y - height / 2) / TILE_SIZE);
+  const lastY = Math.floor((center.y + height / 2) / TILE_SIZE);
+  const tileCount = 2 ** view.zoom;
+  const tiles: Tile[] = [];
+
+  for (let tileY = firstY; tileY <= lastY; tileY += 1) {
+    if (tileY < 0 || tileY >= tileCount) continue;
+    for (let tileX = firstX; tileX <= lastX; tileX += 1) {
+      const wrappedX = ((tileX % tileCount) + tileCount) % tileCount;
+      tiles.push({
+        key: `${view.zoom}/${wrappedX}/${tileY}`,
+        src: `${TILE_URL}/${view.zoom}/${wrappedX}/${tileY}.png`,
+        left: tileX * TILE_SIZE - center.x + width / 2,
+        top: tileY * TILE_SIZE - center.y + height / 2,
+      });
+    }
+  }
+  return tiles;
 }
 
 export default function TripRouteMap({ itinerary }: Props) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ pointerId: number; x: number; y: number; centerX: number; centerY: number } | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const points = useMemo(() => itinerary.map(coordinatesFor), [itinerary]);
-  const selected = itinerary[Math.min(selectedIndex, Math.max(0, itinerary.length - 1))];
-  const polyline = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const [view, setView] = useState(initialView);
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [tilesFailed, setTilesFailed] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+
+  useEffect(() => {
+    const element = mapRef.current;
+    if (!element) return;
+    const resize = () => {
+      const bounds = element.getBoundingClientRect();
+      setViewport({ width: Math.round(bounds.width), height: Math.round(bounds.height) });
+    };
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const places = useMemo(() => itinerary.map((place, index) => ({
+    place,
+    index,
+    point: coordinatesFor(place, index),
+    kind: getPlaceKind(place),
+  })), [itinerary]);
+  const centerWorld = useMemo(() => toWorld(view, view.zoom), [view]);
+  const tiles = useMemo(() => tilesFor(view, viewport.width, viewport.height), [view, viewport]);
+  const activeIndex = Math.min(selectedIndex, Math.max(0, places.length - 1));
+  const selected = places[activeIndex];
 
   function selectStop(index: number) {
     setSelectedIndex(index);
   }
 
+  function zoomBy(amount: number) {
+    setView((current) => ({ ...current, zoom: Math.max(5, Math.min(11, current.zoom + amount)) }));
+  }
+
+  function resetView() {
+    setView(initialView);
+  }
+
+  function startDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if ((event.target as HTMLElement).closest(".trip-map-control, .trip-map-pin")) return;
+    if (!mapRef.current) return;
+    const center = toWorld(view, view.zoom);
+    dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, centerX: center.x, centerY: center.y };
+    mapRef.current.setPointerCapture(event.pointerId);
+    setIsDragging(true);
+    event.preventDefault();
+  }
+
+  function moveMap(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    setView((current) => ({
+      ...fromWorld({ x: drag.centerX - (event.clientX - drag.x), y: drag.centerY - (event.clientY - drag.y) }, current.zoom),
+      zoom: current.zoom,
+    }));
+  }
+
+  function stopDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (dragRef.current?.pointerId === event.pointerId) {
+      dragRef.current = null;
+      setIsDragging(false);
+      if (mapRef.current?.hasPointerCapture(event.pointerId)) mapRef.current.releasePointerCapture(event.pointerId);
+    }
+  }
+
   return (
     <section className="trip-route-map" aria-labelledby="trip-map-title">
       <div className="trip-map-heading">
-        <div><p className="section-overline">YOUR ROUTE, ON THE ISLAND</p><h4 id="trip-map-title">Stops at a glance</h4></div>
-        <span className="trip-map-count"><Route size={15} /> {itinerary.length} {itinerary.length === 1 ? "stop" : "stops"}</span>
+        <div><p className="section-overline">YOUR ROUTE, ON THE ISLAND</p><h4 id="trip-map-title">Places on your map</h4></div>
+        <span className="trip-map-count"><MapPin size={15} /> {itinerary.length} {itinerary.length === 1 ? "place" : "places"}</span>
       </div>
       <div className="trip-map-layout">
-        <div className="trip-map-canvas">
-          <svg viewBox="0 0 800 570" role="img" aria-labelledby="trip-map-svg-title trip-map-svg-description">
-            <title id="trip-map-svg-title">Map of Sri Lanka with your selected route</title>
-            <desc id="trip-map-svg-description">A schematic island map. Numbered markers show each stop in your planned route. Select a marker or stop name to see it highlighted.</desc>
-            <defs>
-              <linearGradient id="island-fill" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor="#d8e5da" /><stop offset="1" stopColor="#c5d8cc" /></linearGradient>
-              <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a493f" strokeOpacity=".06" strokeWidth="1" /></pattern>
-            </defs>
-            <rect width="800" height="570" rx="18" fill="#e8f0ed" />
-            <rect width="800" height="570" rx="18" fill="url(#map-grid)" />
-            <text x="36" y="46" className="trip-map-sea-label">INDIAN OCEAN</text>
-            <text x="590" y="525" className="trip-map-sea-label">BAY OF BENGAL</text>
-            <path className="trip-map-island" d="M 193 58 C 248 48 295 55 347 73 C 404 86 463 95 511 122 C 572 153 617 202 631 250 C 653 302 675 355 657 407 C 640 446 589 473 557 495 C 520 522 450 543 347 548 C 303 548 276 527 253 510 C 219 489 179 464 147 436 C 116 407 100 371 98 332 C 91 293 103 257 125 222 C 145 189 130 164 149 132 C 162 98 174 73 193 58 Z" />
-            {points.length > 1 && <polyline className="trip-map-route-line" points={polyline} />}
-            {points.map((point, index) => (
-              <g key={itinerary[index].id} className={index === selectedIndex ? "trip-map-marker is-selected" : "trip-map-marker"} role="button" tabIndex={0} aria-label={`Select stop ${index + 1}: ${itinerary[index].name}`} onClick={() => selectStop(index)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectStop(index); } }}>
-                <circle className="trip-map-marker-halo" cx={point.x} cy={point.y} r={17} />
-                <circle className="trip-map-marker-dot" cx={point.x} cy={point.y} r={12} />
-                <text className="trip-map-marker-number" x={point.x} y={point.y + 4}>{index + 1}</text>
-                <title>{itinerary[index].name}</title>
-              </g>
-            ))}
-            <g className="trip-map-compass" transform="translate(742 68)"><path d="M0 20 L8 0 L16 20 L8 15 Z" /><text x="8" y="34">N</text></g>
-          </svg>
+        <div
+          ref={mapRef}
+          className={isDragging ? "trip-map-canvas is-dragging" : "trip-map-canvas"}
+          role="region"
+          aria-label="Interactive Sri Lanka map showing destinations from your route"
+          onPointerDown={startDrag}
+          onPointerMove={moveMap}
+          onPointerUp={stopDrag}
+          onPointerCancel={stopDrag}
+        >
+          <div className="trip-map-tiles" aria-hidden="true">
+            {tiles.map((tile) => <img key={tile.key} src={tile.src} alt="" draggable={false} onLoad={() => setMapReady(true)} onError={() => { setTilesFailed(true); setMapReady(true); }} style={{ left: tile.left, top: tile.top }} />)}
+          </div>
+          {places.map(({ place, index, point, kind }) => {
+            const world = toWorld(point, view.zoom);
+            const x = world.x - centerWorld.x + viewport.width / 2;
+            const y = world.y - centerWorld.y + viewport.height / 2;
+            if (x < -40 || y < -40 || x > viewport.width + 40 || y > viewport.height + 40) return null;
+            return <button
+              type="button"
+              key={place.id}
+              className={`trip-map-pin trip-map-pin--${kind}${index === activeIndex ? " is-selected" : ""}`}
+              style={{ left: x, top: y }}
+              onClick={() => selectStop(index)}
+              aria-label={`Show ${place.name} on the itinerary`}
+              aria-pressed={index === activeIndex}
+              title={place.name}
+            ><PlaceIcon kind={kind} size={17} /><span className="sr-only">{place.name}</span></button>;
+          })}
+          <div className="trip-map-controls" aria-label="Map controls">
+            <button className="trip-map-control" type="button" onClick={() => zoomBy(1)} aria-label="Zoom in"><Plus size={17} /></button>
+            <button className="trip-map-control" type="button" onClick={() => zoomBy(-1)} aria-label="Zoom out"><Minus size={17} /></button>
+            <button className="trip-map-control" type="button" onClick={resetView} aria-label="Reset map view"><Compass size={16} /></button>
+          </div>
+          {!mapReady && <div className="trip-map-loading" role="status"><span />Loading Sri Lanka street map…</div>}
+          {tilesFailed && <div className="trip-map-error" role="status">Some map tiles could not load. Check your connection to view the full street map.</div>}
+          <div className="trip-map-attribution">Map data © OpenStreetMap contributors · ODbL</div>
         </div>
-        <div className="trip-map-stops" aria-label="Stops in your planned route">
-          <div className="trip-map-stop-list">{itinerary.map((place, index) => (
-            <button type="button" key={place.id} className={index === selectedIndex ? "trip-map-stop is-selected" : "trip-map-stop"} onClick={() => selectStop(index)} aria-pressed={index === selectedIndex}>
-              <span>{String(index + 1).padStart(2, "0")}</span><span><b>{place.name}</b><small>{place.region}</small></span><MapPin size={15} />
+        <div className="trip-map-stops" aria-label="Places in your planned route">
+          <div className="trip-map-stop-list">{places.map(({ place, index, kind }) => (
+            <button type="button" key={place.id} className={index === activeIndex ? "trip-map-stop is-selected" : "trip-map-stop"} onClick={() => selectStop(index)} aria-pressed={index === activeIndex}>
+              <span className={`trip-map-stop-icon trip-map-pin--${kind}`}><PlaceIcon kind={kind} size={17} /></span><span><b>{place.name}</b><small>{place.region}</small></span><MapPin size={15} />
             </button>
           ))}</div>
-          {selected && <div className="trip-map-selected"><p>SELECTED STOP · {String(Math.min(selectedIndex + 1, itinerary.length)).padStart(2, "0")}</p><h5>{selected.name}</h5><span>{selected.location}</span><small>{selected.shortDescription}</small></div>}
-          <p className="trip-map-note">Schematic island view. Marker order follows your route sketch; travel time and road paths can vary.</p>
+          {selected && <div className="trip-map-selected"><p>SELECTED PLACE · {String(activeIndex + 1).padStart(2, "0")}</p><h5>{selected.place.name}</h5><span>{selected.place.location}</span><small>{selected.place.shortDescription}</small></div>}
+          <p className="trip-map-note">Drag to explore the street map. Choose any marker or destination to see its details.</p>
         </div>
       </div>
     </section>
