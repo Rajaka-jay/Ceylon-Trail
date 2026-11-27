@@ -649,3 +649,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .locations-map-wrap .trip-map-stop-list { max-height:350px; }
   .trip-map-stop-row { grid-template-columns:minmax(0,1fr) 36px; }
 }
+
+
+/* Keep the map's SVG zoom and reset controls visible above the tile layer. */
+.trip-map-canvas .trip-map-controls svg { display:block; }
