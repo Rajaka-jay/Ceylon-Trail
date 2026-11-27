@@ -68,6 +68,16 @@ function HomePage() {
   }, [location.search]);
 
   useEffect(() => {
+    const section = new URLSearchParams(location.search).get("section");
+    if (!section) return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(section)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      navigate("/", { replace: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [location.search, navigate]);
+
+  useEffect(() => {
     const updateProgress = () => {
       const available = document.documentElement.scrollHeight - window.innerHeight;
       setScrollProgress(available > 0 ? window.scrollY / available : 0);
@@ -169,10 +179,10 @@ function HomePage() {
       <div className="site-scroll-progress" aria-hidden="true" style={{ transform: `scaleX(${scrollProgress})` }} />
       <div className="announcement"><span className="announcement-dot" /> A little island with a lot of ways to get lost <span className="announcement-sep">·</span> Find your own way in <ArrowRight size={13} /></div>
       <header className="trail-header">
-        <a href="#top" className="trail-brand" aria-label="Ceylon Trail home"><BrandMark className="brand-emblem" /><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></a>
+        <Link to="/" className="trail-brand" aria-label="Ceylon Trail home"><BrandMark className="brand-emblem" /><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></Link>
         <button className="mobile-menu-trigger" type="button" aria-label="Open menu" onClick={() => setMobileOpen(!mobileOpen)}>{mobileOpen ? <X /> : <Menu />}</button>
         <nav className={mobileOpen ? "trail-nav is-open" : "trail-nav"} aria-label="Main navigation">
-          <a href="#discover" onClick={() => setMobileOpen(false)}>Places</a><Link to="/locations" onClick={() => setMobileOpen(false)}>Locations</Link><a href="#journeys" onClick={() => setMobileOpen(false)}>Journeys</a><Link to="/experiences" onClick={() => setMobileOpen(false)}>Experiences</Link><Link to="/travel-desk" onClick={() => setMobileOpen(false)}>Travel desk</Link><a href="#planner" onClick={() => setMobileOpen(false)}>Trip planner</a><a href="#field-notes" onClick={() => setMobileOpen(false)}>Field notes</a>
+          <button type="button" onClick={() => { setMobileOpen(false); document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" }); }}>Places</button><Link to="/locations" onClick={() => setMobileOpen(false)}>Locations</Link><button type="button" onClick={() => { setMobileOpen(false); document.getElementById("journeys")?.scrollIntoView({ behavior: "smooth" }); }}>Journeys</button><Link to="/experiences" onClick={() => setMobileOpen(false)}>Experiences</Link><Link to="/travel-desk" onClick={() => setMobileOpen(false)}>Travel desk</Link><button type="button" onClick={() => { setMobileOpen(false); document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" }); }}>Trip planner</button><button type="button" onClick={() => { setMobileOpen(false); document.getElementById("field-notes")?.scrollIntoView({ behavior: "smooth" }); }}>Field notes</button>
         </nav>
         <div className="trail-header-actions"><UserAccountLink /><button className="saved-shortcut" onClick={() => navigate("/saved")}><Bookmark size={15} /> Saved <span>{favorites.length}</span></button><button className="plan-top-button" onClick={() => { setShowPlanner(true); setMobileOpen(false); }}>Plan my trip <ArrowRight size={15} /></button></div>
       </header>
@@ -231,7 +241,7 @@ function HomePage() {
 
         <section className="travel-notes section-wrap reveal-on-scroll" id="field-notes"><div className="notes-head"><p className="section-overline">BEFORE YOU GO</p><h2>A few useful <em>little things.</em></h2><p>Thoughtful travel begins with simple, up-to-date information.</p></div><div className="notes-grid"><button type="button" onClick={() => setShowPlanner(true)}><span>01</span><b>Sketch your island route</b><p>Choose your interests and trip length, then explore the matching stops on your map.</p><ChevronRight /></button><Link to="/travel-desk"><span>02</span><b>Open the Travel Desk</b><p>Use the built-in weather, currency, distance and preparation tools.</p><ChevronRight /></Link><Link to="/explore"><span>03</span><b>Explore the island guide</b><p>Browse destinations, save places and build a shortlist for your trip.</p><ChevronRight /></Link></div></section>
       </main>
-      <footer className="trail-footer"><div className="footer-brand"><BrandMark className="brand-emblem" /><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></div><p>A field guide to the island we call home.</p><div className="footer-links"><a href="#discover">Explore</a><a href="#planner">Trip planner</a><a href="/Ceylon-Trail/#/experiences">Experiences</a><a href="/Ceylon-Trail/#/travel-desk">Travel desk</a><a href="/Ceylon-Trail/#/about">About</a><Link to="/travel-desk">Travel tools</Link></div><small className="copyright">© 2026 Ceylon Trail · Made with care in Sri Lanka</small></footer>
+      <footer className="trail-footer"><div className="footer-brand"><BrandMark className="brand-emblem" /><span><b>CEYLON TRAIL</b><small>THE ISLAND, WELL FOUND</small></span></div><p>A field guide to the island we call home.</p><div className="footer-links"><button type="button" onClick={() => document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" })}>Explore</button><button type="button" onClick={() => document.getElementById("planner")?.scrollIntoView({ behavior: "smooth" })}>Trip planner</button><Link to="/experiences">Experiences</Link><Link to="/travel-desk">Travel desk</Link><Link to="/about">About</Link><Link to="/travel-desk">Travel tools</Link></div><small className="copyright">© 2026 Ceylon Trail · Made with care in Sri Lanka</small></footer>
 
       {activePlace && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setActivePlace(null); }}><section className="place-modal" role="dialog" aria-modal="true" aria-label={activePlace.name}><button className="modal-close" onClick={() => setActivePlace(null)} aria-label="Close details"><X /></button><img src={activePlace.imageUrl || "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"} alt={activePlace.name} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1100&q=85"; }} /><div className="modal-content"><p className="section-overline">{activePlace.category?.name} · {activePlace.region}</p><h2>{activePlace.name}</h2><p>{activePlace.shortDescription}</p><div className="modal-facts"><span><MapPin />{activePlace.location}</span><span><Compass />{activePlace.duration}</span><span><Sparkles />{activePlace.bestFor}</span></div><div className="modal-actions"><button className="dark-cta" onClick={() => { if (!planned.includes(activePlace.id)) togglePlan(activePlace.id); setShowPlanner(true); setActivePlace(null); }}>Add to my route <ArrowRight size={16} /></button><button className="modal-save" onClick={() => toggleFavorite(activePlace.id)}><Heart size={16} fill={favorites.includes(activePlace.id) ? "currentColor" : "none"} /> {favorites.includes(activePlace.id) ? "Saved" : "Save place"}</button></div></div></section></div>}
 
@@ -268,6 +278,17 @@ function DestinationDetailsRoute() {
   }
 
   return <DestinationDetails favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite} />;
+}
+
+function LegacySectionRedirect() {
+  const location = useLocation();
+  const section = location.pathname.replace(/^\\/+|\\/+$/g, "");
+  const legacySections = new Set(["top", "discover", "places", "journeys", "planner", "field-notes"]);
+
+  if (legacySections.has(section)) {
+    return <Navigate to={`/?section=${section}`} replace />;
+  }
+  return <Navigate to="/" replace />;
 }
 
 export default function App() {
@@ -325,5 +346,5 @@ export default function App() {
     };
   }, []);
 
-  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/locations" element={<LocationsPage />} /><Route path="/experiences" element={<Experiences />} /><Route path="/travel-desk" element={<TravelDesk />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetailsRoute />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /><Route path="/login" element={<UserAccess />} /><Route path="/register" element={<UserAccess />} /><Route path="/account" element={<UserAccess />} /></Routes>;
+  return <Routes><Route path="/" element={<HomePage />} /><Route path="/saved" element={<SavedPage />} /><Route path="/explore" element={<Explore />} /><Route path="/locations" element={<LocationsPage />} /><Route path="/experiences" element={<Experiences />} /><Route path="/travel-desk" element={<TravelDesk />} /><Route path="/about" element={<About />} /><Route path="/guides" element={<Guides />} /><Route path="/guides/:slug" element={<GuideDetails />} /><Route path="/destinations/:id" element={<DestinationDetailsRoute />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDestinations /></ProtectedRoute>} /><Route path="/admin" element={<Navigate to="/admin/destinations" replace />} /><Route path="/login" element={<UserAccess />} /><Route path="/register" element={<UserAccess />} /><Route path="/account" element={<UserAccess />} /><Route path="*" element={<LegacySectionRedirect />} /></Routes>;
 }
