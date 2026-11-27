@@ -282,7 +282,7 @@ function DestinationDetailsRoute() {
 
 function LegacySectionRedirect() {
   const location = useLocation();
-  const section = location.pathname.replace(/^\\/+|\\/+$/g, "");
+  const section = location.pathname.split("/").filter(Boolean).join("/");
   const legacySections = new Set(["top", "discover", "places", "journeys", "planner", "field-notes"]);
 
   if (legacySections.has(section)) {
