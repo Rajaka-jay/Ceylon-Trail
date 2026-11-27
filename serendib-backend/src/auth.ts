@@ -141,4 +141,15 @@ export function requireAdmin(request: any, response: any, next: any) {
   }
 }
 
+router.get("/admin/me", requireAdmin, (request: any, response) => {
+  response.json({
+    success: true,
+    user: {
+      id: request.admin.userId,
+      email: request.admin.email,
+      role: "admin",
+    },
+  });
+});
+
 export default router;
